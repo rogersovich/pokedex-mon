@@ -40,8 +40,12 @@ func main() {
 	defer pokeAPIClient.CloseClient()
 
 	// --- Initialize Pokemon Module Components ---
+	evolutionRepo := evolution_repo.NewMongoEvolutionRepository()
+	evolutionService := evolution_service.NewEvolutionService(evolutionRepo, pokeAPIClient)
+	evolutionHandler := evolution_handler.NewEvolutionHandler(evolutionService)
+
 	pokemonRepo := pokemon_repo.NewMongoPokemonRepository()
-	pokemonService := pokemon_service.NewPokemonService(pokemonRepo, pokeAPIClient)
+	pokemonService := pokemon_service.NewPokemonService(pokemonRepo, pokeAPIClient, evolutionService)
 	pokemonHandler := pokemon_handler.NewPokemonHandler(pokemonService)
 
 	abilityRepo := ability_repo.NewMongoAbilityRepository()
@@ -51,10 +55,6 @@ func main() {
 	pokemonSpeciesRepo := pokemon_species_repo.NewMongoPokemonSpeciesRepository()
 	pokemonSpeciesService := pokemon_species_service.NewPokemonSpeciesService(pokemonSpeciesRepo, pokeAPIClient)
 	pokemonSpeciesHandler := pokemon_species_handler.NewPokemonSpeciesHandler(pokemonSpeciesService)
-
-	evolutionRepo := evolution_repo.NewMongoEvolutionRepository()
-	evolutionService := evolution_service.NewEvolutionService(evolutionRepo, pokeAPIClient)
-	evolutionHandler := evolution_handler.NewEvolutionHandler(evolutionService)
 
 	// --- End Pokemon Module Components ---
 

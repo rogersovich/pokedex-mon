@@ -11,6 +11,9 @@ import (
 	"pokedex/internal/pokemon/repository"
 	"pokedex/internal/pokemon/service"
 	"pokedex/internal/shared/pokeapi"
+
+	evolution_repo "pokedex/internal/evolution/repository"
+	evolution_service "pokedex/internal/evolution/service"
 )
 
 func main() {
@@ -25,11 +28,14 @@ func main() {
 
 	// Initialize shared PokeAPI client
 	pokeAPIClient := pokeapi.NewClient(cfg)
-	defer pokeAPIClient.CloseClient() // Penting untuk menutup klien setelah selesai
+	defer pokeAPIClient.CloseClient()
+
+	evolutionRepo := evolution_repo.NewMongoEvolutionRepository()
+	evolutionService := evolution_service.NewEvolutionService(evolutionRepo, pokeAPIClient)
 
 	// Initialize Pokemon Module Components needed for sync
 	pokemonRepo := repository.NewMongoPokemonRepository()
-	pokemonService := service.NewPokemonService(pokemonRepo, pokeAPIClient)
+	pokemonService := service.NewPokemonService(pokemonRepo, pokeAPIClient, evolutionService)
 
 	// Run the synchronization
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute) // Beri waktu yang cukup

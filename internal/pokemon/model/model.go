@@ -1,6 +1,7 @@
 package model
 
 import (
+	evolution_model "pokedex/internal/evolution/model"
 	"pokedex/utils"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -131,23 +132,23 @@ type PokemonOtherNames struct {
 }
 
 type PokemonDetailResponse struct {
-	ID             int               `json:"id"`
-	Name           string            `json:"name"`
-	Height         int               `json:"height"`
-	Weight         int               `json:"weight"`
-	BaseExperience int               `json:"base_experience"`
-	Sprites        Sprites           `json:"sprites"`
-	Types          []PokemonType     `json:"types"`
-	Stats          []PokemonStatFull `json:"stats"`
-	Abilities      []PokemonAbility  `json:"abilities"`
-	// LocationAreaEncounters string                `json:"location_area_encounters"`
-	GroupedMoves []GroupedVersionMoves `json:"grouped_moves"`
-	Order        int                   `json:"order"`
-	Habitat      string                `json:"habitat"`
-	Thumbnail    string                `json:"thumbnail"`
-	Training     PokemonTraining       `json:"training"`
-	Breeding     PokemonBreeding       `json:"breeding"`
-	OtherNames   []PokemonOtherNames   `json:"other_names"`
+	ID             int                            `json:"id"`
+	Name           string                         `json:"name"`
+	Height         int                            `json:"height"`
+	Weight         int                            `json:"weight"`
+	BaseExperience int                            `json:"base_experience"`
+	Sprites        Sprites                        `json:"sprites"`
+	Types          []PokemonType                  `json:"types"`
+	Stats          []PokemonStatFull              `json:"stats"`
+	Abilities      []PokemonAbility               `json:"abilities"`
+	Evolution      evolution_model.EvolutionChain `json:"evolution"`
+	GroupedMoves   []GroupedVersionMoves          `json:"grouped_moves"`
+	Order          int                            `json:"order"`
+	Habitat        string                         `json:"habitat"`
+	Thumbnail      string                         `json:"thumbnail"`
+	Training       PokemonTraining                `json:"training"`
+	Breeding       PokemonBreeding                `json:"breeding"`
+	OtherNames     []PokemonOtherNames            `json:"other_names"`
 }
 
 // PokemonDocument is the structure to store in MongoDB

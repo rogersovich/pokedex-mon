@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	evolution_service "pokedex/internal/evolution/service"
 	"pokedex/internal/pokemon/model"
 	"pokedex/internal/pokemon/repository"
 	"pokedex/internal/shared/pokeapi"
@@ -22,20 +23,25 @@ type PokemonService interface {
 
 // pokemonServiceImpl implements the PokemonService interface.
 type pokemonServiceImpl struct {
-	pokemonRepo   repository.PokemonRepository
-	pokeAPIClient *pokeapi.Client // Use the shared client
+	pokemonRepo      repository.PokemonRepository
+	pokeAPIClient    *pokeapi.Client
+	evolutionService evolution_service.EvolutionService
 }
 
 // NewPokemonService creates a new instance of PokemonService.
-func NewPokemonService(repo repository.PokemonRepository, api *pokeapi.Client) PokemonService {
+func NewPokemonService(
+	repo repository.PokemonRepository,
+	api *pokeapi.Client,
+	evolutionSvc evolution_service.EvolutionService,
+) PokemonService {
 	return &pokemonServiceImpl{
-		pokemonRepo:   repo,
-		pokeAPIClient: api,
+		pokemonRepo:      repo,
+		pokeAPIClient:    api,
+		evolutionService: evolutionSvc,
 	}
 }
 
-// SyncAllPokemons fetches all pokemon list and their details from PokeAPI
-// and stores them in the local repository. This should be run as a background job.
+// SyncAllPokemons
 func (s *pokemonServiceImpl) SyncAllPokemons(ctx context.Context) error {
 	log.Println("Starting full Pokémon data synchronization...")
 
@@ -116,14 +122,25 @@ func (s *pokemonServiceImpl) SyncAllPokemons(ctx context.Context) error {
 	return nil
 }
 
-// GetPokemon retrieves a single pokemon detail by ID or Name from the local repository.
 func (s *pokemonServiceImpl) GetPokemon(ctx context.Context, identifier string) (model.PokemonDetailResponse, error) {
 	id, err := strconv.Atoi(identifier)
+
+	var pokemonDetail model.PokemonDetailResponse
 	if err == nil {
-		return s.pokemonRepo.GetPokemonByID(ctx, id)
+		pokemonDetail, _ = s.pokemonRepo.GetPokemonByID(ctx, id)
 	} else {
-		return s.pokemonRepo.GetPokemonByName(ctx, identifier)
+		pokemonDetail, _ = s.pokemonRepo.GetPokemonByName(ctx, identifier)
 	}
+
+	evolutionPokemon, err := s.evolutionService.GetEvolution(ctx, strconv.Itoa(pokemonDetail.ID))
+
+	if err != nil {
+		return model.PokemonDetailResponse{}, fmt.Errorf("failed to get evolution: %w", err)
+	}
+
+	pokemonDetail.Evolution = evolutionPokemon
+
+	return pokemonDetail, err
 }
 
 func (s *pokemonServiceImpl) GetPokemonList(ctx context.Context, limit, offset int, baseUrl string, searchQuery string) (model.PokemonListResponse, error) {
