@@ -1,0 +1,42 @@
+# air.toml
+
+root = "."
+tmp_dir = "tmp" # Direktori sementara untuk binary yang dibangun
+
+[build]
+# Perintah untuk membangun proyek Go Anda
+cmd = "go build -o ./tmp/main ."
+# Direktori yang harus dipantau untuk perubahan kode
+bin = "tmp/main"
+# Direktori yang harus diabaikan oleh Air
+include_dir = []
+exclude_dir = ["assets", "tmp", "vendor"]
+# File/direktori yang harus dipantau untuk perubahan
+include_ext = ["go", "tpl", "tmpl", "html"] # Tambahkan ekstensi file lain yang ingin dipantau
+exclude_ext = []
+# Apakah akan menjalankan tes setelah build
+stop_on_error = true
+# Memicu build ulang ketika file konfigurasi berubah
+log_color = true
+send_interrupt = false
+delay = 500 # Penundaan dalam ms sebelum build ulang
+kill_delay = 500 # Penundaan dalam ms sebelum mematikan proses lama
+
+[run]
+# Perintah yang dijalankan setelah build berhasil
+cmd = "./tmp/main"
+# Direktori kerja
+full_bin = ""
+# Lingkungan yang disalurkan ke proses yang dijalankan
+args = []
+# Lingkungan tambahan
+env = []
+# Apakah akan menyalurkan stdin ke proses yang dijalankan
+autoresolve = true
+
+[build.exclude]
+# Direktori yang akan diabaikan dari build
+# Contoh: Jika Anda memiliki direktori 'vendor' atau 'docs'
+# Tambahkan `config` ke `exclude_dir` jika Anda tidak ingin perubahan config memicu rebuild terus-menerus
+# atau hanya ingin Air mengabaikan perubahan di sana.
+# Namun, untuk .env file, Air tidak memantaunya secara default.

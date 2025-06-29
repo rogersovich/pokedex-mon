@@ -1,0 +1,43 @@
+# Binaries for programs and plugins
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binary, can be excluded to keep source control clean
+*_test
+
+# Output of 'go build'
+*.exe
+*.test
+*.prof
+
+# Environments
+.env
+
+# Dependencies
+vendor/
+
+# Go build cache
+.go/
+.cache/
+
+# Local configuration files
+config/*.local.json
+database/*.sqlite3
+tmp/
+
+# Air (live-reloading tool) artifacts
+.air/
+air_windows_amd64.exe # Example, adjust for your OS/arch if needed
+
+# VS Code (or other IDE) specific files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Other common ignored files
+*.log
+*.bak
+*.swp
