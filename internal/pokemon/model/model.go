@@ -9,10 +9,11 @@ import (
 
 // PokemonListItem represents an item in the initial list from PokeAPI
 type PokemonListItem struct {
-	Name    string        `json:"name" bson:"name"`
-	URL     string        `json:"url" bson:"url"`
-	Types   []PokemonType `json:"types" bson:"types"`
-	Sprites Sprites       `json:"sprites" bson:"sprites"`
+	ID        int           `json:"id" bson:"id"`
+	Name      string        `json:"name" bson:"name"`
+	URL       string        `json:"url" bson:"url"`
+	Types     []PokemonType `json:"types" bson:"types"`
+	Thumbnail string        `json:"thumbnail" bson:"thumbnail"`
 }
 
 // PokemonListResponse represents the full response for a list of pokemons
