@@ -59,7 +59,8 @@ func main() {
 	// --- End Pokemon Module Components ---
 
 	// Initialize Gin router
-	routerEngine := gin.New()        // Menggunakan Gin barebones
+	routerEngine := gin.New() // Menggunakan Gin barebones
+
 	routerEngine.Use(gin.Logger())   // Tambahkan logger
 	routerEngine.Use(gin.Recovery()) // Tambahkan recovery
 

@@ -200,6 +200,11 @@ func (s *pokemonServiceImpl) GetPokemonList(ctx context.Context, limit, offset i
 	}
 	// --- AKHIR LOGIKA PEMBANGUNAN URL NEXT DAN PREVIOUS ---
 
+	// Ensure Results is an empty slice (not nil) if there are no items
+	if listItems == nil {
+		listItems = make([]model.PokemonListItem, 0)
+	}
+
 	return model.PokemonListResponse{
 		Count:    int(totalCount),
 		Next:     nextURL,

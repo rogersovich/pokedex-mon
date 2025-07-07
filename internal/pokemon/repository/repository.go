@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"fmt"
-	"path"
 	"sort"
 	"time"
 
@@ -61,6 +60,7 @@ func (r *MongoPokemonRepository) SavePokemon(ctx context.Context, pokemon pokemo
 		LocationAreaEncounters: pokemon.LocationAreaEncounters,
 		Moves:                  pokemon.Moves,
 		Order:                  pokemon.Order,
+		Species:                pokemon.Species,
 		LastSyncedAt:           time.Now().Unix(),
 	}
 
@@ -86,19 +86,17 @@ func (r *MongoPokemonRepository) GetPokemonByID(ctx context.Context, id int) (po
 		return pokemon_model.PokemonDetailResponse{}, fmt.Errorf("failed to retrieve pokemon by ID from DB: %w", err)
 	}
 
+	var speciesName = doc.Species.Name
+
 	var docSpecies pokemon_species_model.PokemonSpeciesDocument
-	filter = bson.M{"id": id}
+	filter = bson.M{"name": speciesName}
 	err = r.collectionSpecies.FindOne(ctx, filter).Decode(&docSpecies)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return pokemon_model.PokemonDetailResponse{}, fmt.Errorf("pokemon species not found: %d", id)
+			return pokemon_model.PokemonDetailResponse{}, fmt.Errorf("pokemon species not found: %s", speciesName)
 		}
 		return pokemon_model.PokemonDetailResponse{}, fmt.Errorf("failed to retrieve pokemon species by id from DB: %w", err)
 	}
-
-	evoURL := docSpecies.EvolutionChain.URL
-	evoID := path.Base(evoURL)
-	fmt.Println(evoID)
 
 	return r.toDetailResponse(doc, docSpecies), nil
 }
@@ -114,8 +112,10 @@ func (r *MongoPokemonRepository) GetPokemonByName(ctx context.Context, name stri
 		return pokemon_model.PokemonDetailResponse{}, fmt.Errorf("failed to retrieve pokemon by name from DB: %w", err)
 	}
 
+	var speciesName = doc.Species.Name
+
 	var docSpecies pokemon_species_model.PokemonSpeciesDocument
-	filter = bson.M{"name": name}
+	filter = bson.M{"name": speciesName}
 	err = r.collectionSpecies.FindOne(ctx, filter).Decode(&docSpecies)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -214,6 +214,7 @@ func (r *MongoPokemonRepository) toDetail(doc pokemon_model.PokemonDocument) pok
 		LocationAreaEncounters: doc.LocationAreaEncounters,
 		Moves:                  doc.Moves,
 		Order:                  doc.Order,
+		Species:                doc.Species,
 	}
 }
 
@@ -221,8 +222,7 @@ func (r *MongoPokemonRepository) toDetailResponse(
 	doc pokemon_model.PokemonDocument,
 	docSpecies pokemon_species_model.PokemonSpeciesDocument) pokemon_model.PokemonDetailResponse {
 
-	defaultSpriteOfficial := "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/"
-	thumbnailImg := defaultSpriteOfficial + fmt.Sprintf("%d.png", doc.Order)
+	thumbnailImg := utils.GetThumbnailPokemon(doc.PokemonID)
 
 	eggGroups := make([]pokemon_model.ResourceReference, len(docSpecies.EggGroups))
 	for i, eg := range docSpecies.EggGroups {

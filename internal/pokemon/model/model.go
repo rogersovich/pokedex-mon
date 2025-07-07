@@ -125,6 +125,7 @@ type PokemonDetail struct {
 	LocationAreaEncounters string               `json:"location_area_encounters" bson:"location_area_encounters"`
 	Moves                  []PokemonMoves       `json:"moves" bson:"moves"`
 	Order                  int                  `json:"order" bson:"order"`
+	Species                ResourceReference    `json:"species" bson:"species"`
 }
 
 type PokemonOtherNames struct {
@@ -171,5 +172,6 @@ type PokemonDocument struct {
 	LocationAreaEncounters string               `bson:"location_area_encounters"`
 	Moves                  []PokemonMoves       `bson:"moves"`
 	Order                  int                  `bson:"order"`
+	Species                ResourceReference    `bson:"species"`
 	LastSyncedAt           int64                `bson:"last_synced_at"`
 }

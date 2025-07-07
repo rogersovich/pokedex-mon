@@ -113,3 +113,10 @@ func CalcMaxStat(baseStat int, typeStat string) int {
 
 	return maxStat
 }
+
+func GetThumbnailPokemon(pokemon_id int) string {
+	defaultSpriteOfficial := "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/"
+	thumbnailImg := defaultSpriteOfficial + fmt.Sprintf("%d.png", pokemon_id)
+
+	return thumbnailImg
+}

@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"path"
 	"pokedex/internal/evolution/model"
 	"pokedex/internal/evolution/repository"
 	"pokedex/internal/shared/pokeapi"
+	"pokedex/utils"
 	"strconv"
 	"sync"
 	"time"
@@ -133,21 +133,27 @@ func (s *evolutionServiceImpl) GetEvolutionPokemonType(ctx context.Context, poke
 	return s.evolutionRepo.GetEvolutionPokemonType(ctx, pokemon_id)
 }
 
+func (s *evolutionServiceImpl) GetPokemonInfo(ctx context.Context, pokemon_name string) (model.EvolutionPokemonInfo, error) {
+	return s.evolutionRepo.GetPokemonInfo(ctx, pokemon_name)
+}
+
 func (s *evolutionServiceImpl) populateEvolutionChainDetails(ctx context.Context, chainLink *model.ChainLink) error {
 	if chainLink == nil || chainLink.Species.URL == "" {
 		return nil
 	}
 
-	// 1. Extract the Pokemon ID from the Species URL.
-	// Example URL: "https://pokeapi.co/api/v2/pokemon-species/1/" -> ID: "1"
-	pokemonIDStr := path.Base(chainLink.Species.URL)
-	pokemonID, err := strconv.Atoi(pokemonIDStr)
-	if err != nil {
-		fmt.Printf("Warning: Could not parse Pokemon ID from URL '%s': %v\n", chainLink.Species.URL, err)
-		return fmt.Errorf("invalid pokemon ID '%s' in URL '%s': %w", pokemonIDStr, chainLink.Species.URL, err)
+	//? 1. Get Pokemon Name and Set Pokemon Info
+	pokemonName := chainLink.Species.Name
+	pokemonInfoResponse, _ := s.evolutionRepo.GetPokemonInfo(ctx, pokemonName)
+	pokemonID := pokemonInfoResponse.ID
+	thumbnailImg := utils.GetThumbnailPokemon(pokemonID)
+
+	chainLink.PokemonInfo = model.EvolutionPokemonInfoResponse{
+		ID:        pokemonID,
+		Name:      pokemonName,
+		Thumbnail: thumbnailImg,
 	}
 
-	fmt.Println(chainLink.Species.URL, "test 1")
 	// 2. Fetch the EvolutionPokemonResponse using the extracted ID from your repository.
 	evolutionPokemonResponse, err := s.evolutionRepo.GetEvolutionPokemonType(ctx, pokemonID)
 	if err != nil {
@@ -161,7 +167,6 @@ func (s *evolutionServiceImpl) populateEvolutionChainDetails(ctx context.Context
 
 	// 4. Recursively call this function for each subsequent evolution in EvolvesTo.
 	for i := range chainLink.EvolvesTo {
-		fmt.Println(chainLink.Species.URL, "test 2")
 		// Pass the address of the element in the slice so modifications are applied directly.
 		if err := s.populateEvolutionChainDetails(ctx, &chainLink.EvolvesTo[i]); err != nil {
 			// If an error in a sub-chain should stop the entire process, return it.

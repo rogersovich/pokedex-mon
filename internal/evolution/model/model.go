@@ -14,11 +14,12 @@ type EvolutionChain struct {
 }
 
 type ChainLink struct {
-	IsBaby           bool                     `json:"is_baby" bson:"is_baby"`
-	Species          ResourceReference        `json:"species" bson:"species"`
-	EvolutionDetails []EvolutionDetail        `json:"evolution_details" bson:"evolution_details"`
-	EvolvesTo        []ChainLink              `json:"evolves_to" bson:"evolves_to"`
-	EvolutionType    EvolutionPokemonResponse `json:"evolution_type" bson:"evolution_type"`
+	IsBaby           bool                         `json:"is_baby" bson:"is_baby"`
+	Species          ResourceReference            `json:"species" bson:"species"`
+	EvolutionDetails []EvolutionDetail            `json:"evolution_details" bson:"evolution_details"`
+	EvolvesTo        []ChainLink                  `json:"evolves_to" bson:"evolves_to"`
+	EvolutionType    EvolutionPokemonResponse     `json:"evolution_type" bson:"evolution_type"`
+	PokemonInfo      EvolutionPokemonInfoResponse `json:"pokemon_info" bson:"pokemon_info"`
 }
 
 type EvolutionDetail struct {
@@ -77,4 +78,22 @@ type EvolutionPokemonTypeDocument struct {
 	Name         string                 `json:"name" bson:"name"`
 	Types        []EvolutionPokemonType `json:"types" bson:"types"`
 	LastSyncedAt int64                  `json:"-" bson:"last_synced_at,omitempty"`
+}
+
+type EvolutionPokemonInfo struct {
+	ID   int    `json:"id" bson:"id"`
+	Name string `json:"name" bson:"name"`
+}
+
+type EvolutionPokemonInfoResponse struct {
+	ID        int    `json:"id" bson:"id"`
+	Name      string `json:"name" bson:"name"`
+	Thumbnail string `json:"thumbnail"`
+}
+
+type EvolutionPokemonInfoDocument struct {
+	ID           primitive.ObjectID `bson:"_id,omitempty"`
+	PokemonID    int                `json:"id" bson:"id"`
+	Name         string             `json:"name" bson:"name"`
+	LastSyncedAt int64              `json:"-" bson:"last_synced_at,omitempty"`
 }

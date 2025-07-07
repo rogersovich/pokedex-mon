@@ -20,6 +20,7 @@ type EvolutionRepository interface {
 	GetEvolutionByID(ctx context.Context, id int) (model.EvolutionChain, error)
 	GetEvolutionByName(ctx context.Context, name string) (model.EvolutionChain, error)
 	GetEvolutionPokemonType(ctx context.Context, id int) (model.EvolutionPokemonResponse, error)
+	GetPokemonInfo(ctx context.Context, pokemon_name string) (model.EvolutionPokemonInfo, error)
 }
 
 type MongoEvolutionRepository struct {
@@ -106,6 +107,30 @@ func (r *MongoEvolutionRepository) GetEvolutionPokemonType(ctx context.Context, 
 	return r.toDetailPokemonType(doc), nil
 }
 
+func (r *MongoEvolutionRepository) GetPokemonInfo(ctx context.Context, pokemon_name string) (model.EvolutionPokemonInfo, error) {
+	var doc model.EvolutionPokemonInfoDocument
+	filter := bson.M{"name": pokemon_name}
+	findOptions := options.FindOne()
+
+	projection := bson.D{
+		{Key: "id", Value: 1},
+		{Key: "name", Value: 1},
+		// {Key: "_id", Value: 0}, // Uncomment to explicitly exclude _id
+	}
+
+	findOptions.SetProjection(projection)
+
+	err := r.pokemonCollection.FindOne(ctx, filter, findOptions).Decode(&doc)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return model.EvolutionPokemonInfo{}, fmt.Errorf("data not found: %s", pokemon_name)
+		}
+		return model.EvolutionPokemonInfo{}, fmt.Errorf("failed to retrieve data from DB: %w", err)
+	}
+
+	return r.toDetailPokemonInfo(doc), nil
+}
+
 func (r *MongoEvolutionRepository) toDetail(doc model.EvolutionChainDocument) model.EvolutionChain {
 	evoDetail := model.EvolutionChain{
 		ID:              doc.EvolutionID,
@@ -121,5 +146,12 @@ func (r *MongoEvolutionRepository) toDetailPokemonType(doc model.EvolutionPokemo
 		ID:    doc.PokemonID,
 		Name:  doc.Name,
 		Types: doc.Types,
+	}
+}
+
+func (r *MongoEvolutionRepository) toDetailPokemonInfo(doc model.EvolutionPokemonInfoDocument) model.EvolutionPokemonInfo {
+	return model.EvolutionPokemonInfo{
+		ID:   doc.PokemonID,
+		Name: doc.Name,
 	}
 }

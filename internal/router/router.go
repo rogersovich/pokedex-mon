@@ -6,6 +6,7 @@ import (
 	pokemon_species_handler "pokedex/internal/pokemon-species/handler"
 	pokemon_handler "pokedex/internal/pokemon/handler"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,11 +18,26 @@ func InitAPIRoutes(
 	pokemonSpeciesHandler *pokemon_species_handler.PokemonSpeciesHandler,
 	evolutionHandler *evolution_handler.EvolutionHandler,
 ) {
+
+	// Configure CORS options
+	corsConfig := cors.DefaultConfig()
+	// corsConfig.AllowAllOrigins = true
+	corsConfig.AllowOrigins = []string{
+		"http://localhost:3000",
+		"http://localhost:3001",
+	}
+	corsConfig.AllowMethods = []string{"GET", "POST", "PUT", "DELETE"}
+	corsConfig.AllowHeaders = []string{"Origin", "Content-Type", "Authorization"}
+	corsConfig.AllowCredentials = true
+
+	// Apply CORS middleware
+	router.Use(cors.New(corsConfig))
+
 	v1 := router.Group("/api/v1")
 	{
 		pokemonGroup := v1.Group("/pokemon")
 		{
-			pokemonGroup.GET("/", pokemonHandler.GetPokemonList)
+			pokemonGroup.GET("", pokemonHandler.GetPokemonList)
 			pokemonGroup.GET("/:identifier", pokemonHandler.GetPokemonDetail)
 		}
 		abilityGroup := v1.Group("/ability")
