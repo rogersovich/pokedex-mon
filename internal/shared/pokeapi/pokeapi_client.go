@@ -14,6 +14,7 @@ import (
 	modelability "pokedex/internal/ability/model"
 	modelevolution "pokedex/internal/evolution/model"
 	modelpokemonspecies "pokedex/internal/pokemon-species/model"
+	model_pokemon_type "pokedex/internal/pokemon-type/model"
 	modelpokemon "pokedex/internal/pokemon/model"
 )
 
@@ -197,6 +198,25 @@ func (c *Client) FetchEvolutionDetail(ctx context.Context, url string) (modelevo
 	log.Printf("Enqueueing detail fetch from PokeAPI: %s\n", url)
 
 	var response modelevolution.EvolutionChain
+	err := c.enqueueAndFetch(ctx, url, &response)
+	return response, err
+}
+
+// --- FUNGSI BARU UNTUK POKEMON TYPE ---
+
+func (c *Client) FetchPokemonTypeList(ctx context.Context, limit, offset int) (model_pokemon_type.PokemonListTypeResponse, error) {
+	url := pokeAPIBaseURL + "/type?limit=" + strconv.Itoa(limit) + "&offset=" + strconv.Itoa(offset)
+	log.Printf("Enqueueing list fetch from PokeAPI: %s\n", url)
+
+	var response model_pokemon_type.PokemonListTypeResponse
+	err := c.enqueueAndFetch(ctx, url, &response)
+	return response, err
+}
+
+func (c *Client) FetchPokemonTypeDetail(ctx context.Context, url string) (model_pokemon_type.PokemonTypeDetailResponse, error) {
+	log.Printf("Enqueueing detail fetch from PokeAPI: %s\n", url)
+
+	var response model_pokemon_type.PokemonTypeDetailResponse
 	err := c.enqueueAndFetch(ctx, url, &response)
 	return response, err
 }

@@ -133,6 +133,11 @@ type PokemonOtherNames struct {
 	Name     string `json:"name"`
 }
 
+type PokemonNumber struct {
+	EntryNumber int               `json:"entry_number" bson:"entry_number"`
+	Pokedex     ResourceReference `json:"pokedex" bson:"pokedex"`
+}
+
 type PokemonDetailResponse struct {
 	ID             int                            `json:"id"`
 	Name           string                         `json:"name"`
@@ -151,6 +156,12 @@ type PokemonDetailResponse struct {
 	Training       PokemonTraining                `json:"training"`
 	Breeding       PokemonBreeding                `json:"breeding"`
 	OtherNames     []PokemonOtherNames            `json:"other_names"`
+	Color          ResourceReference              `json:"color"`
+	Generation     ResourceReference              `json:"generation"`
+	IsBaby         bool                           `json:"is_baby"`
+	IsLegendary    bool                           `json:"is_legendary"`
+	IsMythical     bool                           `json:"is_mythical"`
+	PokedexNumbers []PokemonNumber                `json:"pokedex_numbers"`
 }
 
 // PokemonDocument is the structure to store in MongoDB
