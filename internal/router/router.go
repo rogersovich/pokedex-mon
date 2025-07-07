@@ -4,6 +4,7 @@ import (
 	ability_handler "pokedex/internal/ability/handler"
 	evolution_handler "pokedex/internal/evolution/handler"
 	pokemon_species_handler "pokedex/internal/pokemon-species/handler"
+	pokemon_type_handler "pokedex/internal/pokemon-type/handler"
 	pokemon_handler "pokedex/internal/pokemon/handler"
 
 	"github.com/gin-contrib/cors"
@@ -17,6 +18,7 @@ func InitAPIRoutes(
 	abilityHandler *ability_handler.AbilityHandler,
 	pokemonSpeciesHandler *pokemon_species_handler.PokemonSpeciesHandler,
 	evolutionHandler *evolution_handler.EvolutionHandler,
+	pokemonTypeHandler *pokemon_type_handler.PokemonTypeHandler,
 ) {
 
 	// Configure CORS options
@@ -55,6 +57,11 @@ func InitAPIRoutes(
 			// evolutionGroup.GET("/", pokemonHandler.GetPokemonList)
 			evolutionGroup.GET("/:identifier", evolutionHandler.GetEvolutionDetail)
 			evolutionGroup.GET("/pokemon-type/:pokemon-id", evolutionHandler.GetEvolutionPokemonType)
+		}
+		pokemonTypeGroup := v1.Group("/type")
+		{
+			pokemonTypeGroup.GET("", pokemonTypeHandler.GetPokemonTypeList)
+			pokemonTypeGroup.GET("/:identifier", pokemonTypeHandler.GetEvolutionDetail)
 		}
 	}
 }

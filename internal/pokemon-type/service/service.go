@@ -7,12 +7,15 @@ import (
 	"pokedex/internal/pokemon-type/model"
 	"pokedex/internal/pokemon-type/repository"
 	"pokedex/internal/shared/pokeapi"
+	"strconv"
 	"sync"
 	"time"
 )
 
 type PokemonTypeService interface {
 	SyncAllPokemonType(ctx context.Context) error
+	GetPokemonType(ctx context.Context, identifier string) (model.PokemonTypeDetailResponse, error)
+	GetPokemonTypeList(ctx context.Context, limit, offset int, baseUrl string) (model.PokemonListTypeResponse, error)
 }
 
 type pokemonTypeServiceImpl struct {
@@ -105,4 +108,63 @@ func (s *pokemonTypeServiceImpl) SyncAllPokemonType(ctx context.Context) error {
 
 	log.Printf("Full Type Pokémon data synchronization completed. Total unique data synced: %d\n", totalSynced)
 	return nil
+}
+
+func (s *pokemonTypeServiceImpl) GetPokemonType(ctx context.Context, identifier string) (model.PokemonTypeDetailResponse, error) {
+	id, err := strconv.Atoi(identifier)
+
+	var res model.PokemonTypeDetailResponse
+	if err == nil {
+		res, _ = s.pokemonTypeRepo.GetPokemonTypeByID(ctx, id)
+	} else {
+		res, _ = s.pokemonTypeRepo.GetPokemonTypeByName(ctx, identifier)
+	}
+
+	return res, err
+}
+
+func (s *pokemonTypeServiceImpl) GetPokemonTypeList(ctx context.Context, limit, offset int, baseUrl string) (model.PokemonListTypeResponse, error) {
+	var list_types []model.PokemonTypeListItem
+	var totalCount int64
+	var err error
+
+	list_types, totalCount, err = s.pokemonTypeRepo.GetPokemonTypeList(ctx, limit, offset, baseUrl)
+
+	if err != nil {
+		return model.PokemonListTypeResponse{}, err
+	}
+
+	// --- LOGIKA PEMBANGUNAN URL NEXT DAN PREVIOUS ---
+	var nextURL *string
+	var previousURL *string
+
+	// Next URL
+	if offset+limit < int(totalCount) {
+		nextOffset := offset + limit
+		url := fmt.Sprintf("%s?limit=%d&offset=%d", baseUrl, limit, nextOffset)
+		nextURL = &url
+	}
+
+	// Previous URL
+	if offset > 0 {
+		prevOffset := offset - limit
+		if prevOffset < 0 {
+			prevOffset = 0 // Pastikan offset tidak negatif
+		}
+		url := fmt.Sprintf("%s?limit=%d&offset=%d", baseUrl, limit, prevOffset)
+		previousURL = &url
+	}
+	// --- AKHIR LOGIKA PEMBANGUNAN URL NEXT DAN PREVIOUS ---
+
+	// Ensure Results is an empty slice (not nil) if there are no items
+	if list_types == nil {
+		list_types = make([]model.PokemonTypeListItem, 0)
+	}
+
+	return model.PokemonListTypeResponse{
+		Count:    int(totalCount),
+		Next:     nextURL,
+		Previous: previousURL,
+		Results:  list_types,
+	}, nil
 }

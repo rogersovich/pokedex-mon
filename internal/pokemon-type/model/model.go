@@ -7,7 +7,7 @@ type ResourceReference struct {
 	URL  string `json:"url" bson:"url"`
 }
 
-type TypeDamageRelation struct {
+type TypeDamageRelations struct {
 	DoubleDamgeFrom []ResourceReference `json:"double_damage_from" bson:"double_damage_from"`
 	DoubleDamgeTo   []ResourceReference `json:"double_damage_to" bson:"double_damage_to"`
 	HalfDamgeFrom   []ResourceReference `json:"half_damage_from" bson:"half_damage_from"`
@@ -17,12 +17,12 @@ type TypeDamageRelation struct {
 }
 
 type PokemonTypeDocument struct {
-	ID              primitive.ObjectID `bson:"_id,omitempty"`
-	TypeID          int                `json:"id" bson:"id"`
-	Name            string             `json:"name" bson:"name"`
-	DamageRelation  TypeDamageRelation `json:"damage_relation" bson:"damage_relation"`
-	MoveDamageClass ResourceReference  `json:"move_damage_class" bson:"move_damage_class"`
-	LastSyncedAt    int64              `json:"-" bson:"last_synced_at,omitempty"`
+	ID              primitive.ObjectID  `bson:"_id,omitempty"`
+	TypeID          int                 `json:"id" bson:"id"`
+	Name            string              `json:"name" bson:"name"`
+	DamageRelations TypeDamageRelations `json:"damage_relations" bson:"damage_relations"`
+	MoveDamageClass ResourceReference   `json:"move_damage_class" bson:"move_damage_class"`
+	LastSyncedAt    int64               `json:"-" bson:"last_synced_at,omitempty"`
 }
 
 type PokemonListTypeResponse struct {
@@ -33,13 +33,20 @@ type PokemonListTypeResponse struct {
 }
 
 type PokemonTypeDetailResponse struct {
-	TypeID          int                `json:"id" bson:"id"`
-	Name            string             `json:"name" bson:"name"`
-	DamageRelation  TypeDamageRelation `json:"damage_relation" bson:"damage_relation"`
-	MoveDamageClass ResourceReference  `json:"move_damage_class" bson:"move_damage_class"`
+	TypeID          int                 `json:"id" bson:"id"`
+	Name            string              `json:"name" bson:"name"`
+	DamageRelations TypeDamageRelations `json:"damage_relations" bson:"damage_relations"`
+	MoveDamageClass ResourceReference   `json:"move_damage_class" bson:"move_damage_class"`
 }
 
 type PokemonTypeListItem struct {
-	Name string `json:"name" bson:"name"`
-	URL  string `json:"url" bson:"url"`
+	TypeID int    `json:"id" bson:"id"`
+	Name   string `json:"name" bson:"name"`
+	URL    string `json:"url" bson:"url"`
+}
+
+type PokemonTypeListItemDocument struct {
+	TypeID int    `json:"id" bson:"id"`
+	Name   string `json:"name" bson:"name"`
+	URL    string `json:"url" bson:"url"`
 }
