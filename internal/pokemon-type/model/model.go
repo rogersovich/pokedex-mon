@@ -50,3 +50,26 @@ type PokemonTypeListItemDocument struct {
 	Name   string `json:"name" bson:"name"`
 	URL    string `json:"url" bson:"url"`
 }
+
+type PokemonWeaknessTypes struct {
+	Name          string  `json:"name" bson:"name"`
+	WeaknessPoint float64 `json:"weakness_point" bson:"weakness_point"`
+}
+
+type PokemonWeaknessResponse struct {
+	PokeID      int                    `json:"id" bson:"id"`
+	PokemonName string                 `json:"pokemon_name" bson:"pokemon_name"`
+	Weakness    []PokemonWeaknessTypes `json:"weakness" bson:"weakness"`
+}
+
+type PokemonInfo struct {
+	ID   int    `json:"id" bson:"id"`
+	Name string `json:"name" bson:"name"`
+}
+
+type PokemonDamageRelations struct {
+	PokeID          int                 `json:"pokemon_id"`
+	PokemonName     string              `json:"pokemon_name"`
+	DoubleDamgeFrom []ResourceReference `json:"double_damage_from"`
+	HalfDamgeFrom   []ResourceReference `json:"half_damage_from" `
+}

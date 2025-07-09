@@ -3,9 +3,11 @@ package handler
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"pokedex/internal/pokemon-type/service"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -34,8 +36,12 @@ func (h *PokemonTypeHandler) GetPokemonTypeList(c *gin.Context) {
 		offset = 0
 	}
 
+	pokemonTypes := c.QueryArray("types")
+
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
 	defer cancel()
+
+	log.Printf("Pokemon Types: %v", pokemonTypes)
 
 	// --- Tambahkan baseUrl di sini ---
 	// Mendapatkan skema (http/https), host, dan path dasar dari request
@@ -54,7 +60,7 @@ func (h *PokemonTypeHandler) GetPokemonTypeList(c *gin.Context) {
 	c.JSON(http.StatusOK, listResponse)
 }
 
-func (h *PokemonTypeHandler) GetEvolutionDetail(c *gin.Context) {
+func (h *PokemonTypeHandler) GetPokemonTypeDetail(c *gin.Context) {
 	identifier := c.Param("identifier")
 
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
@@ -68,6 +74,40 @@ func (h *PokemonTypeHandler) GetEvolutionDetail(c *gin.Context) {
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve data"})
+		return
+	}
+
+	c.JSON(http.StatusOK, res)
+}
+
+func (h *PokemonTypeHandler) GetWeaknessPokemonTypes(c *gin.Context) {
+	pokemonID := c.Param("pokemon-id")
+	pokemonTypesStr := c.Query("types")
+
+	pokemonTypes := strings.Split(pokemonTypesStr, ",")
+
+	if pokemonID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid pokemon-id parameter"})
+		return
+	}
+
+	pokemonIDInt, err := strconv.Atoi(pokemonID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Format pokemon-id to number"})
+		return
+	}
+
+	if len(pokemonTypes) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid types parameter"})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
+	defer cancel()
+
+	res, err := h.pokemonTypeService.GetWeaknessPokemonTypes(ctx, pokemonIDInt, pokemonTypes)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
 

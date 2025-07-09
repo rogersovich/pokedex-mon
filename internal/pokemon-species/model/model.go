@@ -39,7 +39,7 @@ type PokemonSpeciesDetail struct {
 	Names                []PokemonNames      `json:"names"`
 	Order                int                 `json:"order"`
 	PalParkEncounters    []PalParkEncounter  `json:"pal_park_encounters"`
-	PokedexNumbers       []interface{}       `json:"pokedex_numbers"`
+	PokedexNumbers       []PokemonNumber     `json:"pokedex_numbers"`
 	Shape                ResourceReference   `json:"shape"`
 	Varieties            []PokemonVariety    `json:"varieties"`
 }
@@ -71,7 +71,7 @@ type PokemonSpeciesDocument struct {
 	Names                []PokemonNames      `json:"names" bson:"names"`
 	Order                int                 `json:"order" bson:"order"`
 	PalParkEncounters    []PalParkEncounter  `json:"pal_park_encounters" bson:"pal_park_encounters"`
-	PokedexNumbers       []interface{}       `json:"pokedex_numbers" bson:"pokedex_numbers"`
+	PokedexNumbers       []PokemonNumber     `json:"pokedex_numbers" bson:"pokedex_numbers"`
 	Shape                ResourceReference   `json:"shape" bson:"shape"`
 	Varieties            []PokemonVariety    `json:"varieties" bson:"varieties"`
 	LastSyncedAt         int64               `json:"-" bson:"last_synced_at,omitempty"`
@@ -99,4 +99,9 @@ type PokemonVariety struct {
 type PokemonNames struct {
 	Name     string            `json:"name" bson:"name"`
 	Language ResourceReference `json:"language" bson:"language"`
+}
+
+type PokemonNumber struct {
+	EntryNumber int               `json:"entry_number" bson:"entry_number"`
+	Pokedex     ResourceReference `json:"pokedex" bson:"pokedex"`
 }

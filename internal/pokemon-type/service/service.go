@@ -16,6 +16,7 @@ type PokemonTypeService interface {
 	SyncAllPokemonType(ctx context.Context) error
 	GetPokemonType(ctx context.Context, identifier string) (model.PokemonTypeDetailResponse, error)
 	GetPokemonTypeList(ctx context.Context, limit, offset int, baseUrl string) (model.PokemonListTypeResponse, error)
+	GetWeaknessPokemonTypes(ctx context.Context, pokemonID int, pokemonTypes []string) (model.PokemonWeaknessResponse, error)
 }
 
 type pokemonTypeServiceImpl struct {
@@ -166,5 +167,87 @@ func (s *pokemonTypeServiceImpl) GetPokemonTypeList(ctx context.Context, limit, 
 		Next:     nextURL,
 		Previous: previousURL,
 		Results:  list_types,
+	}, nil
+}
+
+func (s *pokemonTypeServiceImpl) GetWeaknessPokemonTypes(ctx context.Context, pokemonID int, pokemonTypes []string) (model.PokemonWeaknessResponse, error) {
+	var pokemon_info model.PokemonInfo
+
+	pokemon_info, err := s.pokemonTypeRepo.GetPokemonByID(ctx, pokemonID)
+	if err != nil {
+		return model.PokemonWeaknessResponse{}, err
+	}
+
+	var list_weakness_types []model.PokemonWeaknessTypes
+	list_weakness_types, err = s.pokemonTypeRepo.GetWeaknessPokemonTypes(ctx, pokemonID, pokemonTypes)
+	if err != nil {
+		return model.PokemonWeaknessResponse{}, err
+	}
+
+	var damageRelations []model.PokemonDamageRelations
+
+	for i := range pokemonTypes {
+		name_type := pokemonTypes[i]
+
+		detail_type, err := s.pokemonTypeRepo.GetPokemonTypeByName(ctx, name_type)
+		if err != nil {
+			return model.PokemonWeaknessResponse{}, err
+		}
+
+		damageRelations = append(damageRelations, model.PokemonDamageRelations{
+			PokeID:          pokemon_info.ID,
+			PokemonName:     pokemon_info.Name,
+			DoubleDamgeFrom: detail_type.DamageRelations.DoubleDamgeFrom,
+			HalfDamgeFrom:   detail_type.DamageRelations.HalfDamgeFrom,
+		})
+	}
+
+	for i_weak := range list_weakness_types {
+		name_type := list_weakness_types[i_weak]
+		weakPoint := 1.0
+
+		for i_dmg := range damageRelations {
+			dmg_type := damageRelations[i_dmg]
+
+			ddf_type_length := 0
+			for _, ddf := range dmg_type.DoubleDamgeFrom {
+				if ddf.Name == name_type.Name {
+					ddf_type_length++
+				}
+			}
+
+			hdf_type_length := 0
+			for _, hdf := range dmg_type.HalfDamgeFrom {
+				if hdf.Name == name_type.Name {
+					hdf_type_length++
+				}
+			}
+
+			var ddf_point float64 = 0.0
+			var hdf_point float64 = 0.0
+
+			if ddf_type_length > 0 {
+				ddf_point = 2.0
+			}
+
+			if hdf_type_length > 0 {
+				hdf_point = 0.5
+			}
+
+			weakCalc := ddf_point + hdf_point
+			if weakCalc == 0 {
+				weakCalc = 1
+			} else {
+				weakPoint = weakPoint * weakCalc
+			}
+		}
+
+		list_weakness_types[i_weak].WeaknessPoint = weakPoint
+	}
+
+	return model.PokemonWeaknessResponse{
+		PokeID:      pokemon_info.ID,
+		PokemonName: pokemon_info.Name,
+		Weakness:    list_weakness_types,
 	}, nil
 }

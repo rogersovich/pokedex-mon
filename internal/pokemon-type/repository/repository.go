@@ -20,6 +20,8 @@ type PokemonTypeRepository interface {
 	GetPokemonTypeByID(ctx context.Context, id int) (model.PokemonTypeDetailResponse, error)
 	GetPokemonTypeByName(ctx context.Context, name string) (model.PokemonTypeDetailResponse, error)
 	GetPokemonTypeList(ctx context.Context, limit, offset int, baseUrl string) ([]model.PokemonTypeListItem, int64, error)
+	GetWeaknessPokemonTypes(ctx context.Context, pokemonID int, pokemonTypes []string) ([]model.PokemonWeaknessTypes, error)
+	GetPokemonByID(ctx context.Context, pokemonID int) (model.PokemonInfo, error)
 }
 
 type MongoPokemonTypeRepository struct {
@@ -110,6 +112,62 @@ func (r *MongoPokemonTypeRepository) GetPokemonTypeList(ctx context.Context, lim
 	}
 
 	return listType, totalCount, nil
+}
+
+func (r *MongoPokemonTypeRepository) GetWeaknessPokemonTypes(ctx context.Context, pokemonID int, pokemonTypes []string) ([]model.PokemonWeaknessTypes, error) {
+	findOptions := options.Find()
+	findOptions.SetSort(bson.D{{Key: "id", Value: 1}})
+
+	cursor, err := r.collection.Find(ctx, bson.M{}, findOptions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve types list from DB: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	var docs []model.PokemonTypeListItemDocument
+	if err = cursor.All(ctx, &docs); err != nil {
+		return nil, fmt.Errorf("failed to decode types list from DB: %w", err)
+	}
+
+	var listType []model.PokemonWeaknessTypes
+
+	excludedTypes := map[string]bool{
+		"stellar": true,
+		"unknown": true,
+		"shadow":  true,
+	}
+
+	for _, doc := range docs {
+		// Kecualikan type dengan nama "stellar", "unknown", dan "shadow"
+		if !excludedTypes[doc.Name] {
+			listType = append(listType, r.toWeaknessTypes(doc))
+		}
+	}
+
+	return listType, nil
+}
+
+func (r *MongoPokemonTypeRepository) GetPokemonByID(ctx context.Context, pokemonID int) (model.PokemonInfo, error) {
+	var doc model.PokemonInfo
+
+	filter := bson.M{"id": pokemonID}
+
+	err := r.pokemonCollection.FindOne(ctx, filter).Decode(&doc)
+	if err != nil {
+		return model.PokemonInfo{}, err
+	}
+
+	return doc, nil
+}
+
+func (r *MongoPokemonTypeRepository) toWeaknessTypes(doc model.PokemonTypeListItemDocument) model.PokemonWeaknessTypes {
+
+	res := model.PokemonWeaknessTypes{
+		Name:          doc.Name,
+		WeaknessPoint: 0,
+	}
+
+	return res
 }
 
 func (r *MongoPokemonTypeRepository) toDetailList(doc model.PokemonTypeListItemDocument, baseUrl string) model.PokemonTypeListItem {

@@ -254,6 +254,14 @@ func (r *MongoPokemonRepository) toDetailResponse(
 	allowedMoveVersion := []string{"black-white", "red-blue"}
 	allowedMoveMethod := []string{"egg", "level-up", "machine", "tutor"}
 
+	pokedexNumbers := []pokemon_model.PokemonNumber{}
+	for _, number := range docSpecies.PokedexNumbers {
+		pokedexNumbers = append(pokedexNumbers, pokemon_model.PokemonNumber{
+			EntryNumber: number.EntryNumber,
+			Pokedex:     pokemon_model.ResourceReference(number.Pokedex),
+		})
+	}
+
 	return pokemon_model.PokemonDetailResponse{
 		ID:           doc.PokemonID,
 		Name:         doc.Name,
@@ -281,6 +289,12 @@ func (r *MongoPokemonRepository) toDetailResponse(
 			HatchCounter: docSpecies.HatchCounter,
 			EggCycles:    utils.CalcEggCycles(docSpecies.HatchCounter),
 		},
+		IsBaby:         docSpecies.IsBaby,
+		IsLegendary:    docSpecies.IsLegendary,
+		IsMythical:     docSpecies.IsMythical,
+		Color:          pokemon_model.ResourceReference(docSpecies.Color),
+		Generation:     pokemon_model.ResourceReference(docSpecies.Generation),
+		PokedexNumbers: pokedexNumbers,
 	}
 }
 

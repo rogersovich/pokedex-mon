@@ -61,7 +61,8 @@ func InitAPIRoutes(
 		pokemonTypeGroup := v1.Group("/type")
 		{
 			pokemonTypeGroup.GET("", pokemonTypeHandler.GetPokemonTypeList)
-			pokemonTypeGroup.GET("/:identifier", pokemonTypeHandler.GetEvolutionDetail)
+			pokemonTypeGroup.GET("/:identifier", pokemonTypeHandler.GetPokemonTypeDetail)
+			pokemonTypeGroup.GET("/weakness/:pokemon-id", pokemonTypeHandler.GetWeaknessPokemonTypes)
 		}
 	}
 }
