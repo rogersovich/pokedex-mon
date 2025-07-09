@@ -262,6 +262,11 @@ func (r *MongoPokemonRepository) toDetailResponse(
 		})
 	}
 
+	// Mendapatkan ID dari URL evolution chain, misal: https://pokeapi.co/api/v2/evolution-chain/67/
+	evolutionURL := docSpecies.EvolutionChain.URL
+	var evolutionID int
+	fmt.Sscanf(evolutionURL, "https://pokeapi.co/api/v2/evolution-chain/%d/", &evolutionID)
+
 	return pokemon_model.PokemonDetailResponse{
 		ID:           doc.PokemonID,
 		Name:         doc.Name,
@@ -295,6 +300,7 @@ func (r *MongoPokemonRepository) toDetailResponse(
 		Color:          pokemon_model.ResourceReference(docSpecies.Color),
 		Generation:     pokemon_model.ResourceReference(docSpecies.Generation),
 		PokedexNumbers: pokedexNumbers,
+		EvolutionID:    evolutionID,
 	}
 }
 

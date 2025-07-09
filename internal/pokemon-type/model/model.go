@@ -52,6 +52,7 @@ type PokemonTypeListItemDocument struct {
 }
 
 type PokemonWeaknessTypes struct {
+	TypeID        int     `json:"type_id" bson:"type_id"`
 	Name          string  `json:"name" bson:"name"`
 	WeaknessPoint float64 `json:"weakness_point" bson:"weakness_point"`
 }

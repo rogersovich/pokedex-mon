@@ -164,6 +164,7 @@ func (r *MongoPokemonTypeRepository) toWeaknessTypes(doc model.PokemonTypeListIt
 
 	res := model.PokemonWeaknessTypes{
 		Name:          doc.Name,
+		TypeID:        doc.TypeID,
 		WeaknessPoint: 0,
 	}
 

@@ -162,6 +162,7 @@ type PokemonDetailResponse struct {
 	IsLegendary    bool                           `json:"is_legendary"`
 	IsMythical     bool                           `json:"is_mythical"`
 	PokedexNumbers []PokemonNumber                `json:"pokedex_numbers"`
+	EvolutionID    int                            `json:"evolution_id"`
 }
 
 // PokemonDocument is the structure to store in MongoDB

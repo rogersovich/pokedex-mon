@@ -132,7 +132,7 @@ func (s *pokemonServiceImpl) GetPokemon(ctx context.Context, identifier string) 
 		pokemonDetail, _ = s.pokemonRepo.GetPokemonByName(ctx, identifier)
 	}
 
-	evolutionPokemon, err := s.evolutionService.GetEvolution(ctx, strconv.Itoa(pokemonDetail.ID))
+	evolutionPokemon, err := s.evolutionService.GetEvolution(ctx, strconv.Itoa(pokemonDetail.EvolutionID))
 
 	if err != nil {
 		return model.PokemonDetailResponse{}, fmt.Errorf("failed to get evolution: %w", err)
