@@ -19,6 +19,9 @@ import (
 	evolution_handler "pokedex/internal/evolution/handler"
 	evolution_repo "pokedex/internal/evolution/repository"
 	evolution_service "pokedex/internal/evolution/service"
+	pokedexes_handler "pokedex/internal/pokedexes/handler"
+	pokedexes_repo "pokedex/internal/pokedexes/repository"
+	pokedexes_service "pokedex/internal/pokedexes/service"
 	pokemon_species_handler "pokedex/internal/pokemon-species/handler"
 	pokemon_species_repo "pokedex/internal/pokemon-species/repository"
 	pokemon_species_service "pokedex/internal/pokemon-species/service"
@@ -63,6 +66,10 @@ func main() {
 	pokemonTypeService := pokemon_type_service.NewPokemonTypeService(pokemonTypeRepo, pokeAPIClient)
 	pokemonTypeHandler := pokemon_type_handler.NewPokemonTypeHandler(pokemonTypeService)
 
+	pokedexesRepo := pokedexes_repo.NewMongoPokedexesRepository()
+	pokedexesService := pokedexes_service.NewPokedexesService(pokedexesRepo, pokeAPIClient)
+	pokedexesHandler := pokedexes_handler.NewPokedexesHandler(pokedexesService)
+
 	// --- End Pokemon Module Components ---
 
 	// Initialize Gin router
@@ -72,7 +79,7 @@ func main() {
 	routerEngine.Use(gin.Recovery()) // Tambahkan recovery
 
 	// Setup API routes for all modules
-	router.InitAPIRoutes(routerEngine, pokemonHandler, abilityHandler, pokemonSpeciesHandler, evolutionHandler, pokemonTypeHandler)
+	router.InitAPIRoutes(routerEngine, pokemonHandler, abilityHandler, pokemonSpeciesHandler, evolutionHandler, pokemonTypeHandler, pokedexesHandler)
 
 	// Start Gin server
 	serverPort := ":" + cfg.Port

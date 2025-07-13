@@ -165,6 +165,24 @@ type PokemonDetailResponse struct {
 	EvolutionID    int                            `json:"evolution_id"`
 }
 
+type PokemonNext struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+	URL  string `json:"url"`
+}
+
+type PokemonPrev struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+	URL  string `json:"url"`
+}
+
+type PokemonDetailBaseResponse struct {
+	Detail      PokemonDetailResponse `json:"detail"`
+	NextPokemon PokemonNext           `json:"next_pokemon"`
+	PrevPokemon PokemonPrev           `json:"prev_pokemon"`
+}
+
 // PokemonDocument is the structure to store in MongoDB
 type PokemonDocument struct {
 	ID                     primitive.ObjectID   `bson:"_id,omitempty"`

@@ -3,7 +3,10 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"unicode"
+
+	"github.com/gin-gonic/gin"
 )
 
 func PrintJSON(v any) {
@@ -25,4 +28,70 @@ func CapitalizeFirstLetter(s string) string {
 	}
 
 	return string(runes)
+}
+
+func BaseResponseError(c *gin.Context, statusCode int, message string) {
+	c.JSON(statusCode, gin.H{
+		"data":    nil,
+		"message": message,
+		"status":  "error",
+	})
+}
+
+func BaseResponsePaginateSuccess(c *gin.Context, message string, data interface{}, count int, next, prev *string) {
+	if data == nil {
+		c.JSON(200, gin.H{
+			"data": gin.H{
+				"items": []interface{}{}, // default empty array
+				"count": count,
+				"next":  next,
+				"prev":  prev,
+			},
+			"message": message,
+			"status":  "ok",
+		})
+		return
+	}
+
+	t := reflect.TypeOf(data)
+	v := reflect.ValueOf(data)
+
+	// If it's a slice and nil, return empty array
+	if t.Kind() == reflect.Slice && v.IsNil() {
+		c.JSON(200, gin.H{
+			"data": gin.H{
+				"items": []interface{}{}, // empty JSON array
+				"count": count,
+				"next":  next,
+				"prev":  prev,
+			},
+			"message": message,
+			"status":  "ok",
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"data": gin.H{
+			"items": data,
+			"count": count,
+			"next":  next,
+			"prev":  prev,
+		},
+		"message": message,
+		"status":  "ok",
+		"error":   nil,
+	})
+}
+
+func BaseResponseDetailSuccess(c *gin.Context, message string, data interface{}, prevData, nextData *BaseResourceNavigation) {
+	c.JSON(200, gin.H{
+		"data": gin.H{
+			"item": data,
+			"prev": prevData,
+			"next": nextData,
+		},
+		"message": message,
+		"status":  "success",
+	})
 }
