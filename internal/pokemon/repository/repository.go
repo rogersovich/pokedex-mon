@@ -253,28 +253,30 @@ func (r *MongoPokemonRepository) toDetailResponse(
 
 	pokemonGeneration := pokemon_model.ResourceReference(docSpecies.Generation)
 
-	allowedMoveVersion := []string{}
+	allowedMoveVersion := []string{"scarlet-violet", "diamond-pearl"}
 
-	switch pokemonGeneration.Name {
-	case "generation-i":
-		allowedMoveVersion = []string{"red-blue", "yellow"}
-	case "generation-ii":
-		allowedMoveVersion = []string{"crystal", "gold-silver"}
-	case "generation-iii":
-		allowedMoveVersion = []string{"emerald", "ruby-sapphire"}
-	case "generation-iv":
-		allowedMoveVersion = []string{"diamond-pearl", "platinum"}
-	case "generation-v":
-		allowedMoveVersion = []string{"black-white", "black-2-white-2"}
-	case "generation-vi":
-		allowedMoveVersion = []string{"x-y", "omega-ruby-alpha-sapphire"}
-	case "generation-vii":
-		allowedMoveVersion = []string{"sun-moon", "ultra-sun-ultra-moon"}
-	case "generation-viii":
-		allowedMoveVersion = []string{"sword-shield", "legends-arceus"}
-	case "generation-ix":
-		allowedMoveVersion = []string{"scarlet-violet"}
-	}
+	//! Commented
+	//? for now for every pokemon we allow only the newest generation
+	// switch pokemonGeneration.Name {
+	// case "generation-i":
+	// 	allowedMoveVersion = []string{"red-blue", "yellow", "scarlet-violet", "diamond-pearl"}
+	// case "generation-ii":
+	// 	allowedMoveVersion = []string{"crystal", "gold-silver"}
+	// case "generation-iii":
+	// 	allowedMoveVersion = []string{"emerald", "ruby-sapphire"}
+	// case "generation-iv":
+	// 	allowedMoveVersion = []string{"diamond-pearl", "platinum"}
+	// case "generation-v":
+	// 	allowedMoveVersion = []string{"black-white", "black-2-white-2"}
+	// case "generation-vi":
+	// 	allowedMoveVersion = []string{"x-y", "omega-ruby-alpha-sapphire"}
+	// case "generation-vii":
+	// 	allowedMoveVersion = []string{"sun-moon", "ultra-sun-ultra-moon"}
+	// case "generation-viii":
+	// 	allowedMoveVersion = []string{"sword-shield", "legends-arceus"}
+	// case "generation-ix":
+	// 	allowedMoveVersion = []string{"scarlet-violet", "diamond-pearl"}
+	// }
 
 	allowedMoveMethod := []string{"egg", "level-up", "machine", "tutor"}
 
@@ -322,7 +324,7 @@ func (r *MongoPokemonRepository) toDetailResponse(
 		IsLegendary:    docSpecies.IsLegendary,
 		IsMythical:     docSpecies.IsMythical,
 		Color:          pokemon_model.ResourceReference(docSpecies.Color),
-		Generation:     pokemon_model.ResourceReference(docSpecies.Generation),
+		Generation:     pokemonGeneration,
 		PokedexNumbers: pokedexNumbers,
 		EvolutionID:    evolutionID,
 	}
