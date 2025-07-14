@@ -13,6 +13,7 @@ import (
 	"pokedex/config"
 	modelability "pokedex/internal/ability/model"
 	modelevolution "pokedex/internal/evolution/model"
+	model_items "pokedex/internal/items/model"
 	model_podexes "pokedex/internal/pokedexes/model"
 	modelpokemonspecies "pokedex/internal/pokemon-species/model"
 	model_pokemon_type "pokedex/internal/pokemon-type/model"
@@ -237,6 +238,25 @@ func (c *Client) FetchPokedexesDetail(ctx context.Context, url string) (model_po
 	log.Printf("Enqueueing detail fetch from PokeAPI: %s\n", url)
 
 	var response model_podexes.PokedexesDetail
+	err := c.enqueueAndFetch(ctx, url, &response)
+	return response, err
+}
+
+// --- FUNGSI BARU UNTUK ITEMS ---
+
+func (c *Client) FetchItemList(ctx context.Context, limit, offset int) (model_items.ListItem, error) {
+	url := pokeAPIBaseURL + "/item?limit=" + strconv.Itoa(limit) + "&offset=" + strconv.Itoa(offset)
+	log.Printf("Enqueueing list fetch from PokeAPI: %s\n", url)
+
+	var response model_items.ListItem
+	err := c.enqueueAndFetch(ctx, url, &response)
+	return response, err
+}
+
+func (c *Client) FetchItemDetail(ctx context.Context, url string) (model_items.ItemDetail, error) {
+	log.Printf("Enqueueing detail fetch from PokeAPI: %s\n", url)
+
+	var response model_items.ItemDetail
 	err := c.enqueueAndFetch(ctx, url, &response)
 	return response, err
 }

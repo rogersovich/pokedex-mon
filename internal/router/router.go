@@ -3,6 +3,7 @@ package router
 import (
 	ability_handler "pokedex/internal/ability/handler"
 	evolution_handler "pokedex/internal/evolution/handler"
+	item_handler "pokedex/internal/items/handler"
 	pokedexes_handler "pokedex/internal/pokedexes/handler"
 	pokemon_species_handler "pokedex/internal/pokemon-species/handler"
 	pokemon_type_handler "pokedex/internal/pokemon-type/handler"
@@ -21,6 +22,7 @@ func InitAPIRoutes(
 	evolutionHandler *evolution_handler.EvolutionHandler,
 	pokemonTypeHandler *pokemon_type_handler.PokemonTypeHandler,
 	pokedexesHandler *pokedexes_handler.PokedexesHandler,
+	itemHandler *item_handler.ItemHandler,
 ) {
 
 	// Configure CORS options
@@ -70,6 +72,11 @@ func InitAPIRoutes(
 		{
 			pokedexesGroup.GET("", pokedexesHandler.GetPokemonTypeList)
 			pokedexesGroup.GET("/:identifier", pokedexesHandler.GetPokedexDetail)
+		}
+		itemGroup := v1.Group("/item")
+		{
+			itemGroup.GET("", itemHandler.GetItemList)
+			itemGroup.GET("/:identifier", itemHandler.GetItemDetail)
 		}
 	}
 }
