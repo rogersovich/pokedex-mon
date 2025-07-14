@@ -50,8 +50,12 @@ func main() {
 	evolutionService := evolution_service.NewEvolutionService(evolutionRepo, pokeAPIClient)
 	evolutionHandler := evolution_handler.NewEvolutionHandler(evolutionService)
 
+	pokedexesRepo := pokedexes_repo.NewMongoPokedexesRepository()
+	pokedexesService := pokedexes_service.NewPokedexesService(pokedexesRepo, pokeAPIClient)
+	pokedexesHandler := pokedexes_handler.NewPokedexesHandler(pokedexesService)
+
 	pokemonRepo := pokemon_repo.NewMongoPokemonRepository()
-	pokemonService := pokemon_service.NewPokemonService(pokemonRepo, pokeAPIClient, evolutionService)
+	pokemonService := pokemon_service.NewPokemonService(pokemonRepo, pokeAPIClient, evolutionService, pokedexesService)
 	pokemonHandler := pokemon_handler.NewPokemonHandler(pokemonService)
 
 	abilityRepo := ability_repo.NewMongoAbilityRepository()
@@ -65,10 +69,6 @@ func main() {
 	pokemonTypeRepo := pokemon_type_repo.NewMongoPokemonTypeRepository()
 	pokemonTypeService := pokemon_type_service.NewPokemonTypeService(pokemonTypeRepo, pokeAPIClient)
 	pokemonTypeHandler := pokemon_type_handler.NewPokemonTypeHandler(pokemonTypeService)
-
-	pokedexesRepo := pokedexes_repo.NewMongoPokedexesRepository()
-	pokedexesService := pokedexes_service.NewPokedexesService(pokedexesRepo, pokeAPIClient)
-	pokedexesHandler := pokedexes_handler.NewPokedexesHandler(pokedexesService)
 
 	// --- End Pokemon Module Components ---
 

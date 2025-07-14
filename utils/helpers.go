@@ -84,7 +84,7 @@ func BaseResponsePaginateSuccess(c *gin.Context, message string, data interface{
 	})
 }
 
-func BaseResponseDetailSuccess(c *gin.Context, message string, data interface{}, prevData, nextData *BaseResourceNavigation) {
+func BaseResponseDetailSuccess(c *gin.Context, message string, data interface{}, nextData, prevData *BaseResourceNavigation) {
 	c.JSON(200, gin.H{
 		"data": gin.H{
 			"item": data,
@@ -94,4 +94,26 @@ func BaseResponseDetailSuccess(c *gin.Context, message string, data interface{},
 		"message": message,
 		"status":  "success",
 	})
+}
+
+func GetBaseURLDynamic(c *gin.Context, module string) string {
+	scheme := "http"
+	// Memeriksa apakah koneksi menggunakan HTTPS
+	if c.Request.TLS != nil {
+		scheme = "https"
+	}
+	// Menggunakan c.Request.Host untuk mendapatkan host dan port
+	// dan menambahkan path dasar API
+	return fmt.Sprintf("%s://%s/api/v1/%s", scheme, c.Request.Host, module)
+}
+
+func GetBaseURL(c *gin.Context) string {
+	scheme := "http"
+	// Memeriksa apakah koneksi menggunakan HTTPS
+	if c.Request.TLS != nil {
+		scheme = "https"
+	}
+	// Menggunakan c.Request.Host untuk mendapatkan host dan port
+	// dan menambahkan path dasar API
+	return fmt.Sprintf("%s://%s/api/v1/", scheme, c.Request.Host)
 }

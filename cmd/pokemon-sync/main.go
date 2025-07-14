@@ -14,6 +14,9 @@ import (
 
 	evolution_repo "pokedex/internal/evolution/repository"
 	evolution_service "pokedex/internal/evolution/service"
+
+	pokedexes_repo "pokedex/internal/pokedexes/repository"
+	pokedexes_service "pokedex/internal/pokedexes/service"
 )
 
 func main() {
@@ -33,9 +36,12 @@ func main() {
 	evolutionRepo := evolution_repo.NewMongoEvolutionRepository()
 	evolutionService := evolution_service.NewEvolutionService(evolutionRepo, pokeAPIClient)
 
+	pokedexesRepo := pokedexes_repo.NewMongoPokedexesRepository()
+	pokedexesService := pokedexes_service.NewPokedexesService(pokedexesRepo, pokeAPIClient)
+
 	// Initialize Pokemon Module Components needed for sync
 	pokemonRepo := repository.NewMongoPokemonRepository()
-	pokemonService := service.NewPokemonService(pokemonRepo, pokeAPIClient, evolutionService)
+	pokemonService := service.NewPokemonService(pokemonRepo, pokeAPIClient, evolutionService, pokedexesService)
 
 	// Run the synchronization
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute) // Beri waktu yang cukup

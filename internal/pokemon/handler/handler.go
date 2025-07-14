@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"pokedex/internal/pokemon/service"
+	"pokedex/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -64,16 +65,13 @@ func (h *PokemonHandler) GetPokemonDetail(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
 	defer cancel()
 
-	pokemon, err := h.pokemonService.GetPokemon(ctx, identifier)
+	baseURL := utils.GetBaseURL(c)
+
+	data, next, prev, err := h.pokemonService.GetPokemon(ctx, identifier, baseURL)
 	if err != nil {
-		// More robust error checking for "not found"
-		if err.Error() == fmt.Sprintf("pokemon not found: %s", identifier) {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve pokemon detail"})
+		utils.BaseResponseError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, pokemon)
+	utils.BaseResponseDetailSuccess(c, "success get all data", data, next, prev)
 }

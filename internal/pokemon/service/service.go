@@ -9,15 +9,17 @@ import (
 	"time"
 
 	evolution_service "pokedex/internal/evolution/service"
+	pokedexes_service "pokedex/internal/pokedexes/service"
 	"pokedex/internal/pokemon/model"
 	"pokedex/internal/pokemon/repository"
 	"pokedex/internal/shared/pokeapi"
+	"pokedex/utils"
 )
 
 // PokemonService defines the business logic for Pokemon operations.
 type PokemonService interface {
 	SyncAllPokemons(ctx context.Context) error
-	GetPokemon(ctx context.Context, identifier string) (model.PokemonDetailResponse, error)
+	GetPokemon(ctx context.Context, identifier string, baseUrl string) (data model.PokemonDetailResponse, next, prev *utils.BaseResourceNavigation, err error)
 	GetPokemonList(ctx context.Context, limit, offset int, baseUrl string, searchQuery string) (model.PokemonListResponse, error)
 }
 
@@ -26,6 +28,7 @@ type pokemonServiceImpl struct {
 	pokemonRepo      repository.PokemonRepository
 	pokeAPIClient    *pokeapi.Client
 	evolutionService evolution_service.EvolutionService
+	pokedexesService pokedexes_service.PokedexesService
 }
 
 // NewPokemonService creates a new instance of PokemonService.
@@ -33,11 +36,13 @@ func NewPokemonService(
 	repo repository.PokemonRepository,
 	api *pokeapi.Client,
 	evolutionSvc evolution_service.EvolutionService,
+	pokedexexSvc pokedexes_service.PokedexesService,
 ) PokemonService {
 	return &pokemonServiceImpl{
 		pokemonRepo:      repo,
 		pokeAPIClient:    api,
 		evolutionService: evolutionSvc,
+		pokedexesService: pokedexexSvc,
 	}
 }
 
@@ -122,7 +127,7 @@ func (s *pokemonServiceImpl) SyncAllPokemons(ctx context.Context) error {
 	return nil
 }
 
-func (s *pokemonServiceImpl) GetPokemon(ctx context.Context, identifier string) (model.PokemonDetailResponse, error) {
+func (s *pokemonServiceImpl) GetPokemon(ctx context.Context, identifier string, baseUrl string) (data model.PokemonDetailResponse, next, prev *utils.BaseResourceNavigation, err error) {
 	id, err := strconv.Atoi(identifier)
 
 	var pokemonDetail model.PokemonDetailResponse
@@ -132,15 +137,71 @@ func (s *pokemonServiceImpl) GetPokemon(ctx context.Context, identifier string) 
 		pokemonDetail, _ = s.pokemonRepo.GetPokemonByName(ctx, identifier)
 	}
 
+	//* Get Evolution
 	evolutionPokemon, err := s.evolutionService.GetEvolution(ctx, strconv.Itoa(pokemonDetail.EvolutionID))
 
 	if err != nil {
-		return model.PokemonDetailResponse{}, fmt.Errorf("failed to get evolution: %w", err)
+		return model.PokemonDetailResponse{}, next, prev, fmt.Errorf("failed to get evolution: %w", err)
 	}
 
 	pokemonDetail.Evolution = evolutionPokemon
 
-	return pokemonDetail, err
+	//* Get Pokedex National ID
+	var currentPokedexNumber int
+	var pokedexNationalID int
+	var nextData *utils.BaseResourceNavigation
+	var prevData *utils.BaseResourceNavigation
+	for _, number := range pokemonDetail.PokedexNumbers {
+		if number.Pokedex.Name == "national" {
+			currentPokedexNumber = number.EntryNumber
+			pokedexNationalID = 1
+		}
+	}
+
+	//* Get Pokedex Detail
+	pokedexDetail, err := s.pokedexesService.GetPokedexDetail(ctx, strconv.Itoa(pokedexNationalID))
+
+	if err != nil {
+		return model.PokemonDetailResponse{}, next, prev, fmt.Errorf("failed to get pokedex detail: %w", err)
+	}
+
+	totalPokedex := len(pokedexDetail.PokemonEntries)
+
+	if currentPokedexNumber >= totalPokedex {
+		nextData = nil
+	} else {
+		nextID := currentPokedexNumber + 1
+		nextURL := fmt.Sprintf("%spokemon/%s", baseUrl, strconv.Itoa(nextID))
+
+		for _, entry := range pokedexDetail.PokemonEntries {
+			if entry.EnteryNumber == nextID {
+				nextData = &utils.BaseResourceNavigation{
+					ID:   nextID,
+					Name: entry.PokemonSpecies.Name,
+					URL:  nextURL,
+				}
+			}
+		}
+	}
+
+	if currentPokedexNumber <= 1 {
+		prevData = nil
+	} else {
+		prevID := currentPokedexNumber - 1
+		prevURL := fmt.Sprintf("%spokemon/%s", baseUrl, strconv.Itoa(prevID))
+
+		for _, entry := range pokedexDetail.PokemonEntries {
+			if entry.EnteryNumber == prevID {
+				prevData = &utils.BaseResourceNavigation{
+					ID:   prevID,
+					Name: entry.PokemonSpecies.Name,
+					URL:  prevURL,
+				}
+			}
+		}
+	}
+
+	return pokemonDetail, nextData, prevData, err
 }
 
 func (s *pokemonServiceImpl) GetPokemonList(ctx context.Context, limit, offset int, baseUrl string, searchQuery string) (model.PokemonListResponse, error) {
