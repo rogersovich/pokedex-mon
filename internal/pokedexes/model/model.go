@@ -54,31 +54,31 @@ type ListPokedexesItem struct {
 
 type PokedexesSaveDocument struct {
 	ID             primitive.ObjectID         `bson:"_id,omitempty"`
-	PokedexesID    int                        `json:"id"`
-	IsMainSeries   bool                       `json:"is_main_series"`
-	Region         BaseResourceReference      `json:"region"`
-	VersionGroup   []BaseResourceReference    `json:"version_group"`
-	Name           string                     `json:"name"`
-	Names          []BasePokedexesNames       `json:"names"`
-	Descriptions   []BasePokedexesDescription `json:"descriptions"`
-	PokemonEntries []BasePokemonEntries       `json:"pokemon_entries"`
+	PokedexesID    int                        `json:"id" bson:"id"`
+	IsMainSeries   bool                       `json:"is_main_series" bson:"is_main_series"`
+	Region         BaseResourceReference      `json:"region" bson:"region"`
+	VersionGroup   []BaseResourceReference    `json:"version_group" bson:"version_group"`
+	Name           string                     `json:"name" bson:"name"`
+	Names          []BasePokedexesNames       `json:"names" bson:"names"`
+	Descriptions   []BasePokedexesDescription `json:"descriptions" bson:"descriptions"`
+	PokemonEntries []BasePokemonEntries       `json:"pokemon_entries" bson:"pokemon_entries"`
 	LastSyncedAt   int64                      `json:"-" bson:"last_synced_at,omitempty"`
 }
 
 type PokedexesDocument struct {
 	ID             primitive.ObjectID         `bson:"_id,omitempty"`
-	PokedexesID    int                        `json:"id"`
-	IsMainSeries   bool                       `json:"is_main_series"`
-	Region         BaseResourceReference      `json:"region"`
-	VersionGroup   []BaseResourceReference    `json:"version_group"`
-	Name           string                     `json:"name"`
-	Names          []BasePokedexesNames       `json:"names"`
-	Descriptions   []BasePokedexesDescription `json:"descriptions"`
-	PokemonEntries []BasePokemonEntries       `json:"pokemon_entries"`
+	PokedexesID    int                        `json:"id" bson:"id"`
+	IsMainSeries   bool                       `json:"is_main_series" bson:"is_main_series"`
+	Region         BaseResourceReference      `json:"region" bson:"region"`
+	VersionGroup   []BaseResourceReference    `json:"version_group" bson:"version_group"`
+	Name           string                     `json:"name" bson:"name"`
+	Names          []BasePokedexesNames       `json:"names" bson:"names"`
+	Descriptions   []BasePokedexesDescription `json:"descriptions" bson:"descriptions"`
+	PokemonEntries []BasePokemonEntries       `json:"pokemon_entries" bson:"pokemon_entries"`
 	LastSyncedAt   int64                      `json:"-" bson:"last_synced_at,omitempty"`
 }
 
 type PokedexesListDocument struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+	ID   int    `json:"id" bson:"id"`
+	Name string `json:"name" bson:"name"`
 }

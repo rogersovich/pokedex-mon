@@ -13,6 +13,7 @@ import (
 	"pokedex/config"
 	modelability "pokedex/internal/ability/model"
 	modelevolution "pokedex/internal/evolution/model"
+	model_generation "pokedex/internal/generation/model"
 	model_items "pokedex/internal/items/model"
 	model_podexes "pokedex/internal/pokedexes/model"
 	modelpokemonspecies "pokedex/internal/pokemon-species/model"
@@ -257,6 +258,25 @@ func (c *Client) FetchItemDetail(ctx context.Context, url string) (model_items.I
 	log.Printf("Enqueueing detail fetch from PokeAPI: %s\n", url)
 
 	var response model_items.ItemDetail
+	err := c.enqueueAndFetch(ctx, url, &response)
+	return response, err
+}
+
+// --- FUNGSI BARU UNTUK GENERATIONS ---
+
+func (c *Client) FetchGenerationList(ctx context.Context, limit, offset int) (model_generation.ListGeneration, error) {
+	url := pokeAPIBaseURL + "/generation?limit=" + strconv.Itoa(limit) + "&offset=" + strconv.Itoa(offset)
+	log.Printf("Enqueueing list fetch from PokeAPI: %s\n", url)
+
+	var response model_generation.ListGeneration
+	err := c.enqueueAndFetch(ctx, url, &response)
+	return response, err
+}
+
+func (c *Client) FetchGenerationDetail(ctx context.Context, url string) (model_generation.GenerationDetail, error) {
+	log.Printf("Enqueueing detail fetch from PokeAPI: %s\n", url)
+
+	var response model_generation.GenerationDetail
 	err := c.enqueueAndFetch(ctx, url, &response)
 	return response, err
 }
