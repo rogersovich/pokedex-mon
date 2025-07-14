@@ -251,7 +251,31 @@ func (r *MongoPokemonRepository) toDetailResponse(
 		}
 	}
 
-	allowedMoveVersion := []string{"black-white", "red-blue"}
+	pokemonGeneration := pokemon_model.ResourceReference(docSpecies.Generation)
+
+	allowedMoveVersion := []string{}
+
+	switch pokemonGeneration.Name {
+	case "generation-i":
+		allowedMoveVersion = []string{"red-blue", "yellow"}
+	case "generation-ii":
+		allowedMoveVersion = []string{"crystal", "gold-silver"}
+	case "generation-iii":
+		allowedMoveVersion = []string{"emerald", "ruby-sapphire"}
+	case "generation-iv":
+		allowedMoveVersion = []string{"diamond-pearl", "platinum"}
+	case "generation-v":
+		allowedMoveVersion = []string{"black-white", "black-2-white-2"}
+	case "generation-vi":
+		allowedMoveVersion = []string{"x-y", "omega-ruby-alpha-sapphire"}
+	case "generation-vii":
+		allowedMoveVersion = []string{"sun-moon", "ultra-sun-ultra-moon"}
+	case "generation-viii":
+		allowedMoveVersion = []string{"sword-shield", "legends-arceus"}
+	case "generation-ix":
+		allowedMoveVersion = []string{"scarlet-violet"}
+	}
+
 	allowedMoveMethod := []string{"egg", "level-up", "machine", "tutor"}
 
 	pokedexNumbers := []pokemon_model.PokemonNumber{}
