@@ -2,9 +2,9 @@ package handler
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"pokedex/internal/ability/service"
+	"pokedex/utils"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -26,16 +26,11 @@ func (h *AbilityHandler) GetAbilityDetail(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
 	defer cancel()
 
-	ability, err := h.abilityService.GetAbility(ctx, identifier)
+	data, err := h.abilityService.GetAbility(ctx, identifier)
 	if err != nil {
-		// More robust error checking for "not found"
-		if err.Error() == fmt.Sprintf("ability not found: %s", identifier) {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve ability detail"})
+		utils.BaseResponseError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, ability)
+	utils.BaseResponseDetailSuccess(c, "success get data", data, nil, nil)
 }

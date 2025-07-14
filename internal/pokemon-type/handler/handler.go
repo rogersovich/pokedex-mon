@@ -2,10 +2,9 @@ package handler
 
 import (
 	"context"
-	"fmt"
-	"log"
 	"net/http"
 	"pokedex/internal/pokemon-type/service"
+	"pokedex/utils"
 	"strconv"
 	"strings"
 	"time"
@@ -36,28 +35,18 @@ func (h *PokemonTypeHandler) GetPokemonTypeList(c *gin.Context) {
 		offset = 0
 	}
 
-	pokemonTypes := c.QueryArray("types")
-
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
 	defer cancel()
 
-	log.Printf("Pokemon Types: %v", pokemonTypes)
+	baseURLPokeType := utils.GetBaseURLDynamic(c, "type")
 
-	// --- Tambahkan baseUrl di sini ---
-	// Mendapatkan skema (http/https), host, dan path dasar dari request
-	scheme := "http"
-	if c.Request.TLS != nil { // Cek apakah koneksi menggunakan HTTPS
-		scheme = "https"
-	}
-	baseUrl := fmt.Sprintf("%s://%s/api/v1/type", scheme, c.Request.Host)
-
-	listResponse, err := h.pokemonTypeService.GetPokemonTypeList(ctx, limit, offset, baseUrl)
+	data, err := h.pokemonTypeService.GetPokemonTypeList(ctx, limit, offset, baseURLPokeType)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve type list"})
+		utils.BaseResponseError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, listResponse)
+	utils.BaseResponsePaginateSuccess(c, "success get all data", data.Results, data.Count, data.Next, data.Previous)
 }
 
 func (h *PokemonTypeHandler) GetPokemonTypeDetail(c *gin.Context) {
@@ -66,18 +55,13 @@ func (h *PokemonTypeHandler) GetPokemonTypeDetail(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
 	defer cancel()
 
-	res, err := h.pokemonTypeService.GetPokemonType(ctx, identifier)
+	data, err := h.pokemonTypeService.GetPokemonType(ctx, identifier)
 	if err != nil {
-		// More robust error checking for "not found"
-		if err.Error() == fmt.Sprintf("data not found: %s", identifier) {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve data"})
+		utils.BaseResponseError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, res)
+	utils.BaseResponseDetailSuccess(c, "success get data", data, nil, nil)
 }
 
 func (h *PokemonTypeHandler) GetWeaknessPokemonTypes(c *gin.Context) {
@@ -105,11 +89,11 @@ func (h *PokemonTypeHandler) GetWeaknessPokemonTypes(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
 	defer cancel()
 
-	res, err := h.pokemonTypeService.GetWeaknessPokemonTypes(ctx, pokemonIDInt, pokemonTypes)
+	data, err := h.pokemonTypeService.GetWeaknessPokemonTypes(ctx, pokemonIDInt, pokemonTypes)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
+		utils.BaseResponseError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, res)
+	utils.BaseResponseDetailSuccess(c, "success get data", data, nil, nil)
 }

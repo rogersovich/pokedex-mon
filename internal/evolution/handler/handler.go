@@ -2,9 +2,9 @@ package handler
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"pokedex/internal/evolution/service"
+	"pokedex/utils"
 	"strconv"
 	"time"
 
@@ -27,18 +27,14 @@ func (h *EvolutionHandler) GetEvolutionDetail(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
 	defer cancel()
 
-	evolution, err := h.evolutionService.GetEvolution(ctx, identifier)
+	data, err := h.evolutionService.GetEvolution(ctx, identifier)
 	if err != nil {
-		// More robust error checking for "not found"
-		if err.Error() == fmt.Sprintf("evolution not found: %s", identifier) {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve evolution detail"})
+		utils.BaseResponseError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, evolution)
+	utils.BaseResponseDetailSuccess(c, "success get data", data, nil, nil)
+
 }
 
 func (h *EvolutionHandler) GetEvolutionPokemonType(c *gin.Context) {
@@ -52,16 +48,11 @@ func (h *EvolutionHandler) GetEvolutionPokemonType(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
 	defer cancel()
 
-	evolution, err := h.evolutionService.GetEvolutionPokemonType(ctx, pokemon_id)
+	data, err := h.evolutionService.GetEvolutionPokemonType(ctx, pokemon_id)
 	if err != nil {
-		// More robust error checking for "not found"
-		if err.Error() == fmt.Sprintf("pokemon not found: %d", pokemon_id) {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve data"})
+		utils.BaseResponseError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, evolution)
+	utils.BaseResponseDetailSuccess(c, "success get data", data, nil, nil)
 }

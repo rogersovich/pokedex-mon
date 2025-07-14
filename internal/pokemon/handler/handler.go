@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -42,21 +41,15 @@ func (h *PokemonHandler) GetPokemonList(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
 	defer cancel()
 
-	// --- Tambahkan baseUrl di sini ---
-	// Mendapatkan skema (http/https), host, dan path dasar dari request
-	scheme := "http"
-	if c.Request.TLS != nil { // Cek apakah koneksi menggunakan HTTPS
-		scheme = "https"
-	}
-	baseUrl := fmt.Sprintf("%s://%s/api/v1/pokemon", scheme, c.Request.Host)
+	baseURLPokemon := utils.GetBaseURLDynamic(c, "pokemon")
 
-	listResponse, err := h.pokemonService.GetPokemonList(ctx, limit, offset, baseUrl, searchQuery)
+	data, err := h.pokemonService.GetPokemonList(ctx, limit, offset, baseURLPokemon, searchQuery)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve pokemon list"})
+		utils.BaseResponseError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, listResponse)
+	utils.BaseResponsePaginateSuccess(c, "success get all data", data.Results, data.Count, data.Next, data.Previous)
 }
 
 func (h *PokemonHandler) GetPokemonDetail(c *gin.Context) {
@@ -73,5 +66,5 @@ func (h *PokemonHandler) GetPokemonDetail(c *gin.Context) {
 		return
 	}
 
-	utils.BaseResponseDetailSuccess(c, "success get all data", data, next, prev)
+	utils.BaseResponseDetailSuccess(c, "success get data", data, next, prev)
 }

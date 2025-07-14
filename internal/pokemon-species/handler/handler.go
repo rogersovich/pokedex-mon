@@ -2,11 +2,11 @@ package handler
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
 	"pokedex/internal/pokemon-species/service"
+	"pokedex/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -29,16 +29,11 @@ func (h *PokemonSpeciesHandler) GetPokemonSpeciesDetail(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
 	defer cancel()
 
-	pokemon, err := h.pokemonSpeciesService.GetPokemonSpecies(ctx, identifier)
+	data, err := h.pokemonSpeciesService.GetPokemonSpecies(ctx, identifier)
 	if err != nil {
-		// More robust error checking for "not found"
-		if err.Error() == fmt.Sprintf("pokemon not found: %s", identifier) {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve pokemon detail"})
+		utils.BaseResponseError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, pokemon)
+	utils.BaseResponseDetailSuccess(c, "success get data", data, nil, nil)
 }
