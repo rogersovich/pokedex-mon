@@ -3,7 +3,7 @@ package handler
 import (
 	"context"
 	"net/http"
-	"pokedex/internal/pokedexes/service"
+	"pokedex/internal/generation/service"
 	"pokedex/utils"
 	"strconv"
 	"time"
@@ -11,23 +11,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type PokedexesHandler struct {
-	pokedexesService service.PokedexesService
+type GenerationHandler struct {
+	generationService service.GenerationService
 }
 
-func NewPokedexesHandler(svc service.PokedexesService) *PokedexesHandler {
-	return &PokedexesHandler{
-		pokedexesService: svc,
+func NewGenerationHandler(svc service.GenerationService) *GenerationHandler {
+	return &GenerationHandler{
+		generationService: svc,
 	}
 }
 
-func (h *PokedexesHandler) GetPokedexDetail(c *gin.Context) {
+func (h *GenerationHandler) GetGenerationDetail(c *gin.Context) {
 	identifier := c.Param("identifier")
 
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
 	defer cancel()
 
-	data, err := h.pokedexesService.GetPokedexDetail(ctx, identifier)
+	data, err := h.generationService.GetGenerationDetail(ctx, identifier)
 	if err != nil {
 		utils.BaseResponseError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -36,7 +36,7 @@ func (h *PokedexesHandler) GetPokedexDetail(c *gin.Context) {
 	utils.BaseResponseDetailSuccess(c, "success get data", data, nil, nil)
 }
 
-func (h *PokedexesHandler) GetPokemonTypeList(c *gin.Context) {
+func (h *GenerationHandler) GetGenerationList(c *gin.Context) {
 	limitStr := c.DefaultQuery("limit", "50")
 	offsetStr := c.DefaultQuery("offset", "0")
 
@@ -52,9 +52,9 @@ func (h *PokedexesHandler) GetPokemonTypeList(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
 	defer cancel()
 
-	baseURLPokedex := utils.GetBaseURLDynamic(c, "pokedex")
+	baseURLGeneration := utils.GetBaseURLDynamic(c, "generation")
 
-	data, err := h.pokedexesService.GetPokedexList(ctx, limit, offset, baseURLPokedex)
+	data, err := h.generationService.GetGenerationList(ctx, limit, offset, baseURLGeneration)
 	if err != nil {
 		utils.BaseResponseError(c, http.StatusInternalServerError, err.Error())
 		return
