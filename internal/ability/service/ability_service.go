@@ -16,7 +16,8 @@ import (
 // AbilityService defines the business logic for Ability operations.
 type AbilityService interface {
 	SyncAllAbilities(ctx context.Context) error
-	GetAbility(ctx context.Context, identifier string) (model.AbilityDetail, error) // Untuk mengambil dari DB
+	GetAbility(ctx context.Context, identifier string) (model.AbilityDetail, error)
+	GetAbilityList(ctx context.Context, limit, offset int, baseUrl string) (model.ListAbility, error)
 }
 
 // abilityServiceImpl implements the AbilityService interface.
@@ -122,4 +123,50 @@ func (s *abilityServiceImpl) GetAbility(ctx context.Context, identifier string) 
 	} else {
 		return s.abilityRepo.GetAbilityByName(ctx, strings.ToLower(identifier))
 	}
+}
+
+func (s *abilityServiceImpl) GetAbilityList(ctx context.Context, limit, offset int, baseUrl string) (model.ListAbility, error) {
+	var list_types []model.ListAbilityItem
+	var totalCount int64
+	var err error
+
+	list_types, totalCount, err = s.abilityRepo.GetAbilityList(ctx, limit, offset, baseUrl)
+
+	if err != nil {
+		return model.ListAbility{}, err
+	}
+
+	// --- LOGIKA PEMBANGUNAN URL NEXT DAN PREVIOUS ---
+	var nextURL *string
+	var previousURL *string
+
+	// Next URL
+	if offset+limit < int(totalCount) {
+		nextOffset := offset + limit
+		url := fmt.Sprintf("%s?limit=%d&offset=%d", baseUrl, limit, nextOffset)
+		nextURL = &url
+	}
+
+	// Previous URL
+	if offset > 0 {
+		prevOffset := offset - limit
+		if prevOffset < 0 {
+			prevOffset = 0 // Pastikan offset tidak negatif
+		}
+		url := fmt.Sprintf("%s?limit=%d&offset=%d", baseUrl, limit, prevOffset)
+		previousURL = &url
+	}
+	// --- AKHIR LOGIKA PEMBANGUNAN URL NEXT DAN PREVIOUS ---
+
+	// Ensure Results is an empty slice (not nil) if there are no items
+	if list_types == nil {
+		list_types = make([]model.ListAbilityItem, 0)
+	}
+
+	return model.ListAbility{
+		Count:    int(totalCount),
+		Next:     nextURL,
+		Previous: previousURL,
+		Results:  list_types,
+	}, nil
 }

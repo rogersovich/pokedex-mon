@@ -91,7 +91,19 @@ type AbilityDetail struct {
 	Pokemon           []PokemonEntry      `json:"pokemon" bson:"pokemon"`
 }
 
-// AbilityDocument is the structure to store in MongoDB
+type ListAbilityItem struct {
+	ID   int    `json:"id" bson:"id"`
+	Name string `json:"name" bson:"name"`
+	URL  string `json:"url" bson:"url"`
+}
+
+type ListAbility struct {
+	Count    int               `json:"count" bson:"count"`
+	Next     *string           `json:"next" bson:"next"`
+	Previous *string           `json:"previous" bson:"previous"`
+	Results  []ListAbilityItem `json:"results" bson:"results"`
+}
+
 type AbilityDocument struct {
 	ID                primitive.ObjectID  `bson:"_id,omitempty"`
 	AbilityID         int                 `bson:"id"`
@@ -104,4 +116,9 @@ type AbilityDocument struct {
 	Names             []NameEntry         `bson:"names"`
 	Pokemon           []PokemonEntry      `bson:"pokemon"`
 	LastSyncedAt      int64               `bson:"last_synced_at"`
+}
+
+type AbilityListDocument struct {
+	ID   int    `json:"id" bson:"id"`
+	Name string `json:"name" bson:"name"`
 }

@@ -7,6 +7,7 @@ import (
 func RegisterAbilityRoutes(rg *gin.RouterGroup, handler *AbilityHandler) {
 	abilityGroup := rg.Group("/ability")
 	{
+		abilityGroup.GET("", handler.GetAbilityList)
 		abilityGroup.GET("/:identifier", handler.GetAbilityDetail)
 	}
 }

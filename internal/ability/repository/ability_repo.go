@@ -19,6 +19,7 @@ type AbilityRepository interface {
 	SaveAbility(ctx context.Context, ability model.AbilityDetail) error
 	GetAbilityByID(ctx context.Context, id int) (model.AbilityDetail, error)
 	GetAbilityByName(ctx context.Context, name string) (model.AbilityDetail, error)
+	GetAbilityList(ctx context.Context, limit, offset int, baseUrl string) ([]model.ListAbilityItem, int64, error)
 }
 
 // MongoAbilityRepository implements the AbilityRepository interface for MongoDB.
@@ -89,7 +90,7 @@ func (r *MongoAbilityRepository) GetAbilityByName(ctx context.Context, name stri
 	return r.toDetail(doc), nil
 }
 
-func (r *MongoAbilityRepository) GetAbilityList(ctx context.Context, limit, offset int) ([]model.AbilityDetail, int64, error) {
+func (r *MongoAbilityRepository) GetAbilityList(ctx context.Context, limit, offset int, baseUrl string) ([]model.ListAbilityItem, int64, error) {
 	totalCount, err := r.collection.CountDocuments(ctx, bson.M{})
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to count abilitys in DB: %w", err)
@@ -106,21 +107,19 @@ func (r *MongoAbilityRepository) GetAbilityList(ctx context.Context, limit, offs
 	}
 	defer cursor.Close(ctx)
 
-	var abilityDocs []model.AbilityDocument
+	var abilityDocs []model.AbilityListDocument
 	if err = cursor.All(ctx, &abilityDocs); err != nil {
 		return nil, 0, fmt.Errorf("failed to decode ability list from DB: %w", err)
 	}
 
-	var abilityDetails []model.AbilityDetail
+	var abilityDetails []model.ListAbilityItem
 	for _, doc := range abilityDocs {
-		abilityDetails = append(abilityDetails, r.toDetail(doc))
+		abilityDetails = append(abilityDetails, r.toListItem(doc, baseUrl))
 	}
 
 	return abilityDetails, totalCount, nil
 }
 
-// toDetail helper function converts an AbilityDocument to an AbilityDetail model.
-// This is useful if your internal document structure differs slightly from the API model.
 func (r *MongoAbilityRepository) toDetail(doc model.AbilityDocument) model.AbilityDetail {
 	return model.AbilityDetail{
 		ID:                doc.AbilityID,
@@ -132,4 +131,12 @@ func (r *MongoAbilityRepository) toDetail(doc model.AbilityDocument) model.Abili
 		Name:              doc.Name,
 		Names:             doc.Names,
 		Pokemon:           doc.Pokemon}
+}
+
+func (r *MongoAbilityRepository) toListItem(doc model.AbilityListDocument, baseUrl string) model.ListAbilityItem {
+	return model.ListAbilityItem{
+		ID:   doc.ID,
+		Name: doc.Name,
+		URL:  baseUrl + fmt.Sprintf("/%d", doc.ID),
+	}
 }
