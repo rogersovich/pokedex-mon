@@ -43,47 +43,14 @@ func InitAPIRoutes(
 
 	v1 := router.Group("/api/v1")
 	{
-		pokemonGroup := v1.Group("/pokemon")
-		{
-			pokemonGroup.GET("", pokemonHandler.GetPokemonList)
-			pokemonGroup.GET("/:identifier", pokemonHandler.GetPokemonDetail)
-		}
-		abilityGroup := v1.Group("/ability")
-		{
-			// abilityGroup.GET("/", abilityHandler.GetPokeGemonList)
-			abilityGroup.GET("/:identifier", abilityHandler.GetAbilityDetail)
-		}
-		pokemonSpeciesGroup := v1.Group("/pokemon-species")
-		{
-			// pokemonSpeciesGroup.GET("/", pokemonHandler.GetPokemonList)
-			pokemonSpeciesGroup.GET("/:identifier", pokemonSpeciesHandler.GetPokemonSpeciesDetail)
-		}
-		evolutionGroup := v1.Group("/evolution")
-		{
-			// evolutionGroup.GET("/", pokemonHandler.GetPokemonList)
-			evolutionGroup.GET("/:identifier", evolutionHandler.GetEvolutionDetail)
-			evolutionGroup.GET("/pokemon-type/:pokemon-id", evolutionHandler.GetEvolutionPokemonType)
-		}
-		pokemonTypeGroup := v1.Group("/type")
-		{
-			pokemonTypeGroup.GET("", pokemonTypeHandler.GetPokemonTypeList)
-			pokemonTypeGroup.GET("/:identifier", pokemonTypeHandler.GetPokemonTypeDetail)
-			pokemonTypeGroup.GET("/weakness/:pokemon-id", pokemonTypeHandler.GetWeaknessPokemonTypes)
-		}
-		pokedexesGroup := v1.Group("/pokedex")
-		{
-			pokedexesGroup.GET("", pokedexesHandler.GetPokemonTypeList)
-			pokedexesGroup.GET("/:identifier", pokedexesHandler.GetPokedexDetail)
-		}
-		itemGroup := v1.Group("/item")
-		{
-			itemGroup.GET("", itemHandler.GetItemList)
-			itemGroup.GET("/:identifier", itemHandler.GetItemDetail)
-		}
-		generationGroup := v1.Group("/generation")
-		{
-			generationGroup.GET("", generationHandler.GetGenerationList)
-			generationGroup.GET("/:identifier", generationHandler.GetGenerationDetail)
-		}
+		// Register routes for each module
+		pokemon_handler.RegisterPokemonRoutes(v1, pokemonHandler)
+		ability_handler.RegisterAbilityRoutes(v1, abilityHandler)
+		pokemon_species_handler.RegisterPokemonSpeciesRoutes(v1, pokemonSpeciesHandler)
+		evolution_handler.RegisterEvolutionRoutes(v1, evolutionHandler)
+		pokemon_type_handler.RegisterPokemonTypeRoutes(v1, pokemonTypeHandler)
+		pokedexes_handler.RegisterPokedexesRoutes(v1, pokedexesHandler)
+		item_handler.RegisterItemRoutes(v1, itemHandler)
+		generation_handler.RegisterGenerationRoutes(v1, generationHandler)
 	}
 }

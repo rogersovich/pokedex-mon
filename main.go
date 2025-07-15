@@ -10,35 +10,9 @@ import (
 
 	"pokedex/config"
 	"pokedex/database"
+	"pokedex/internal/app"
 	"pokedex/internal/router"
 	"pokedex/internal/shared/pokeapi"
-
-	ability_handler "pokedex/internal/ability/handler"
-	ability_repo "pokedex/internal/ability/repository"
-	ability_service "pokedex/internal/ability/service"
-	evolution_handler "pokedex/internal/evolution/handler"
-	evolution_repo "pokedex/internal/evolution/repository"
-	evolution_service "pokedex/internal/evolution/service"
-	pokedexes_handler "pokedex/internal/pokedexes/handler"
-	pokedexes_repo "pokedex/internal/pokedexes/repository"
-	pokedexes_service "pokedex/internal/pokedexes/service"
-	pokemon_species_handler "pokedex/internal/pokemon-species/handler"
-	pokemon_species_repo "pokedex/internal/pokemon-species/repository"
-	pokemon_species_service "pokedex/internal/pokemon-species/service"
-	pokemon_type_handler "pokedex/internal/pokemon-type/handler"
-	pokemon_type_repo "pokedex/internal/pokemon-type/repository"
-	pokemon_type_service "pokedex/internal/pokemon-type/service"
-	pokemon_handler "pokedex/internal/pokemon/handler"
-	pokemon_repo "pokedex/internal/pokemon/repository"
-	pokemon_service "pokedex/internal/pokemon/service"
-
-	item_handler "pokedex/internal/items/handler"
-	item_repo "pokedex/internal/items/repository"
-	item_service "pokedex/internal/items/service"
-
-	generation_handler "pokedex/internal/generation/handler"
-	generation_repo "pokedex/internal/generation/repository"
-	generation_service "pokedex/internal/generation/service"
 )
 
 func main() {
@@ -53,66 +27,35 @@ func main() {
 	pokeAPIClient := pokeapi.NewClient(cfg)
 	defer pokeAPIClient.CloseClient()
 
-	// --- Initialize Pokemon Module Components ---
-	evolutionRepo := evolution_repo.NewMongoEvolutionRepository()
-	evolutionService := evolution_service.NewEvolutionService(evolutionRepo, pokeAPIClient)
-	evolutionHandler := evolution_handler.NewEvolutionHandler(evolutionService)
-
-	pokedexesRepo := pokedexes_repo.NewMongoPokedexesRepository()
-	pokedexesService := pokedexes_service.NewPokedexesService(pokedexesRepo, pokeAPIClient)
-	pokedexesHandler := pokedexes_handler.NewPokedexesHandler(pokedexesService)
-
-	pokemonRepo := pokemon_repo.NewMongoPokemonRepository()
-	pokemonService := pokemon_service.NewPokemonService(pokemonRepo, pokeAPIClient, evolutionService, pokedexesService)
-	pokemonHandler := pokemon_handler.NewPokemonHandler(pokemonService)
-
-	abilityRepo := ability_repo.NewMongoAbilityRepository()
-	abilityService := ability_service.NewAbilityService(abilityRepo, pokeAPIClient)
-	abilityHandler := ability_handler.NewAbilityHandler(abilityService)
-
-	itemRepo := item_repo.NewMongoItemsRepository()
-	itemService := item_service.NewItemsService(itemRepo, pokeAPIClient)
-	itemHandler := item_handler.NewItemHandler(itemService)
-
-	generationRepo := generation_repo.NewMongoGenerationRepository()
-	generationService := generation_service.NewGenerationService(generationRepo, pokeAPIClient)
-	generationHandler := generation_handler.NewGenerationHandler(generationService)
-
-	pokemonSpeciesRepo := pokemon_species_repo.NewMongoPokemonSpeciesRepository()
-	pokemonSpeciesService := pokemon_species_service.NewPokemonSpeciesService(pokemonSpeciesRepo, pokeAPIClient)
-	pokemonSpeciesHandler := pokemon_species_handler.NewPokemonSpeciesHandler(pokemonSpeciesService)
-
-	pokemonTypeRepo := pokemon_type_repo.NewMongoPokemonTypeRepository()
-	pokemonTypeService := pokemon_type_service.NewPokemonTypeService(pokemonTypeRepo, pokeAPIClient)
-	pokemonTypeHandler := pokemon_type_handler.NewPokemonTypeHandler(pokemonTypeService)
-
-	// --- End Pokemon Module Components ---
+	// Initialize all application components (handlers, services, repos) via the app package
+	application := app.NewApplication(cfg, pokeAPIClient)
 
 	// Initialize Gin router
-	routerEngine := gin.New() // Menggunakan Gin barebones
+	routerEngine := gin.New()
 
-	routerEngine.Use(gin.Logger())   // Tambahkan logger
-	routerEngine.Use(gin.Recovery()) // Tambahkan recovery
+	routerEngine.Use(gin.Logger())   // Add logger middleware
+	routerEngine.Use(gin.Recovery()) // Add recovery middleware
 
-	// Setup API routes for all modules
+	// Setup API routes for all modules, passing handlers from the application struct
 	router.InitAPIRoutes(
 		routerEngine,
-		pokemonHandler,
-		abilityHandler,
-		pokemonSpeciesHandler,
-		evolutionHandler,
-		pokemonTypeHandler,
-		pokedexesHandler,
-		itemHandler,
-		generationHandler,
+		application.PokemonHandler,
+		application.AbilityHandler,
+		application.PokemonSpeciesHandler,
+		application.EvolutionHandler,
+		application.PokemonTypeHandler,
+		application.PokedexesHandler,
+		application.ItemHandler,
+		application.GenerationHandler,
 	)
 
-	// Start Gin server
+	// Start Gin server in a goroutine so it doesn't block the main thread
 	serverPort := ":" + cfg.Port
-
-	if err := routerEngine.Run(serverPort); err != nil {
-		log.Fatalf("Gin server failed to start: %v", err)
-	}
+	go func() {
+		if err := routerEngine.Run(serverPort); err != nil {
+			log.Fatalf("Gin server failed to start: %v", err)
+		}
+	}()
 
 	log.Printf("Server listening on %s\n", serverPort)
 

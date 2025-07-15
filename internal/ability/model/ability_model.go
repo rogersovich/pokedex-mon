@@ -61,10 +61,27 @@ type NameEntry struct {
 	Name string `json:"name" bson:"name"`
 }
 
+// Language represents the 'language' object
+type Language struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
+}
+
+// EffectEntry represents an individual entry within 'effect_entries'
+type EffectEntry struct {
+	Effect   string   `json:"effect"`
+	Language Language `json:"language"`
+}
+
+type EffectChange struct {
+	EffectEntries []EffectEntry   `json:"effect_entries"`
+	VersionGroup  AbilityListItem `json:"version_group"`
+}
+
 // AbilityDetai
 type AbilityDetail struct {
 	ID                int                 `json:"id" bson:"id"`
-	EffectChanges     []interface{}       `json:"effect_changes" bson:"effect_changes"`
+	EffectChanges     []EffectChange      `json:"effect_changes" bson:"effect_changes"`
 	EffectEntries     []EffectEntries     `json:"effect_entries" bson:"effect_entries"`
 	FlavorTextEntries []FlavorTextEntries `json:"flavor_text_entries" bson:"flavor_text_entries"`
 	Generation        Generation          `json:"generation" bson:"generation"`
@@ -78,7 +95,7 @@ type AbilityDetail struct {
 type AbilityDocument struct {
 	ID                primitive.ObjectID  `bson:"_id,omitempty"`
 	AbilityID         int                 `bson:"id"`
-	EffectChanges     []interface{}       `bson:"effect_changes"`
+	EffectChanges     []EffectChange      `bson:"effect_changes"`
 	EffectEntries     []EffectEntries     `bson:"effect_entries"`
 	FlavorTextEntries []FlavorTextEntries `bson:"flavor_text_entries"`
 	Generation        Generation          `bson:"generation"`
