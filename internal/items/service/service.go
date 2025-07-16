@@ -7,6 +7,7 @@ import (
 	"pokedex/internal/items/model"
 	"pokedex/internal/items/repository"
 	"pokedex/internal/shared/pokeapi"
+	"pokedex/utils"
 	"strconv"
 	"sync"
 	"time"
@@ -14,7 +15,7 @@ import (
 
 type ItemsService interface {
 	SyncAllItems(ctx context.Context) error
-	GetItemDetail(ctx context.Context, identifier string) (model.ItemDetail, error)
+	GetItemDetail(ctx context.Context, identifier string, baseUrl string) (model.ItemDetail, *utils.BaseResourceNavigation, *utils.BaseResourceNavigation, error)
 	GetItemList(ctx context.Context, limit, offset int, baseUrl string) (model.ListItem, error)
 }
 
@@ -110,22 +111,65 @@ func (s *itemsServiceImpl) SyncAllItems(ctx context.Context) error {
 	return nil
 }
 
-func (s *itemsServiceImpl) GetItemDetail(ctx context.Context, identifier string) (model.ItemDetail, error) {
+func (s *itemsServiceImpl) GetItemDetail(ctx context.Context, identifier string, baseUrl string) (data model.ItemDetail, next, prev *utils.BaseResourceNavigation, err error) {
+	var nextData *utils.BaseResourceNavigation
+	var prevData *utils.BaseResourceNavigation
+
 	id, err := strconv.Atoi(identifier)
 
 	if err != nil {
-		return model.ItemDetail{}, fmt.Errorf("invalid id: %s must number", identifier)
+		return model.ItemDetail{}, nil, nil, fmt.Errorf("invalid id: %s must number", identifier)
 	}
 
-	return s.itemsRepo.GetItemByID(ctx, id)
+	data, _ = s.itemsRepo.GetItemByID(ctx, id)
+
+	_, totalCount, err := s.itemsRepo.GetItemList(ctx, 1, 0, baseUrl)
+
+	if err != nil {
+		return model.ItemDetail{}, nil, nil, err
+	}
+
+	totalCountInt := int(totalCount)
+
+	if data.ID >= totalCountInt {
+		nextData = nil
+	} else {
+		nextID := data.ID + 1
+		nextURL := fmt.Sprintf("%s/%s", baseUrl, strconv.Itoa(nextID))
+
+		getNextData, _ := s.itemsRepo.GetItemByID(ctx, nextID)
+
+		nextData = &utils.BaseResourceNavigation{
+			ID:   nextID,
+			Name: getNextData.Name,
+			URL:  nextURL,
+		}
+	}
+
+	if data.ID <= 1 {
+		prevData = nil
+	} else {
+		prevID := data.ID - 1
+		prevURL := fmt.Sprintf("%s/%s", baseUrl, strconv.Itoa(prevID))
+
+		getPrevData, _ := s.itemsRepo.GetItemByID(ctx, prevID)
+
+		prevData = &utils.BaseResourceNavigation{
+			ID:   prevID,
+			Name: getPrevData.Name,
+			URL:  prevURL,
+		}
+	}
+
+	return data, nextData, prevData, nil
 }
 
 func (s *itemsServiceImpl) GetItemList(ctx context.Context, limit, offset int, baseUrl string) (model.ListItem, error) {
-	var list_types []model.ListItemItem
+	var data []model.ListItemItem
 	var totalCount int64
 	var err error
 
-	list_types, totalCount, err = s.itemsRepo.GetItemList(ctx, limit, offset, baseUrl)
+	data, totalCount, err = s.itemsRepo.GetItemList(ctx, limit, offset, baseUrl)
 
 	if err != nil {
 		return model.ListItem{}, err
@@ -154,14 +198,14 @@ func (s *itemsServiceImpl) GetItemList(ctx context.Context, limit, offset int, b
 	// --- AKHIR LOGIKA PEMBANGUNAN URL NEXT DAN PREVIOUS ---
 
 	// Ensure Results is an empty slice (not nil) if there are no items
-	if list_types == nil {
-		list_types = make([]model.ListItemItem, 0)
+	if data == nil {
+		data = make([]model.ListItemItem, 0)
 	}
 
 	return model.ListItem{
 		Count:    int(totalCount),
 		Next:     nextURL,
 		Previous: previousURL,
-		Results:  list_types,
+		Results:  data,
 	}, nil
 }

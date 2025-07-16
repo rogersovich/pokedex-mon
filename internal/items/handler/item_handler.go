@@ -27,13 +27,15 @@ func (h *ItemHandler) GetItemDetail(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
 	defer cancel()
 
-	data, err := h.itemService.GetItemDetail(ctx, identifier)
+	baseURLItem := utils.GetBaseURLDynamic(c, "item")
+
+	data, next, prev, err := h.itemService.GetItemDetail(ctx, identifier, baseURLItem)
 	if err != nil {
 		utils.BaseResponseError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.BaseResponseDetailSuccess(c, "success get all data", data, nil, nil)
+	utils.BaseResponseDetailSuccess(c, "success get all data", data, next, prev)
 }
 
 func (h *ItemHandler) GetItemList(c *gin.Context) {
