@@ -17,6 +17,7 @@ const itemCollectionName = "items"
 type ItemsRepository interface {
 	SaveItem(ctx context.Context, ability model.ItemDetail) error
 	GetItemByID(ctx context.Context, id int) (model.ItemDetail, error)
+	GetItemByName(ctx context.Context, name string) (model.ItemDetail, error)
 	GetItemList(ctx context.Context, limit, offset int, baseUrl string) ([]model.ListItemItem, int64, error)
 }
 
@@ -71,6 +72,19 @@ func (r *MongoItemsRepository) GetItemByID(ctx context.Context, id int) (model.I
 			return model.ItemDetail{}, fmt.Errorf("items with ID %d not found", id)
 		}
 		return model.ItemDetail{}, fmt.Errorf("failed to retrieve items by ID from DB: %w", err)
+	}
+	return r.toDetail(doc), nil
+}
+
+func (r *MongoItemsRepository) GetItemByName(ctx context.Context, name string) (model.ItemDetail, error) {
+	var doc model.ItemDetailDocument
+	filter := bson.M{"name": name}
+	err := r.collection.FindOne(ctx, filter).Decode(&doc)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return model.ItemDetail{}, fmt.Errorf("items with ID %s not found", name)
+		}
+		return model.ItemDetail{}, fmt.Errorf("failed to retrieve items by Name from DB: %w", err)
 	}
 	return r.toDetail(doc), nil
 }

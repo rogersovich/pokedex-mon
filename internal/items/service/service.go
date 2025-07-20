@@ -117,11 +117,11 @@ func (s *itemsServiceImpl) GetItemDetail(ctx context.Context, identifier string,
 
 	id, err := strconv.Atoi(identifier)
 
-	if err != nil {
-		return model.ItemDetail{}, nil, nil, fmt.Errorf("invalid id: %s must number", identifier)
+	if err == nil {
+		data, _ = s.itemsRepo.GetItemByID(ctx, id)
+	} else {
+		data, _ = s.itemsRepo.GetItemByName(ctx, identifier)
 	}
-
-	data, _ = s.itemsRepo.GetItemByID(ctx, id)
 
 	_, totalCount, err := s.itemsRepo.GetItemList(ctx, 1, 0, baseUrl)
 
