@@ -222,7 +222,7 @@ func (r *MongoPokemonRepository) toDetailResponse(
 	doc pokemon_model.PokemonDocument,
 	docSpecies pokemon_species_model.PokemonSpeciesDocument) pokemon_model.PokemonDetailResponse {
 
-	thumbnailImg := utils.GetThumbnailPokemon(doc.PokemonID)
+	thumbnailImg := utils.GetThumbnailPokemon(doc.PokemonID, doc.Sprites.FrontDefault)
 
 	eggGroups := make([]pokemon_model.ResourceReference, len(docSpecies.EggGroups))
 	for i, eg := range docSpecies.EggGroups {
@@ -253,32 +253,32 @@ func (r *MongoPokemonRepository) toDetailResponse(
 
 	pokemonGeneration := pokemon_model.ResourceReference(docSpecies.Generation)
 
-	allowedMoveVersion := []string{"scarlet-violet", "diamond-pearl"}
+	allowedMoveVersion := []string{"diamond-pearl", "scarlet-violet"}
 
 	//! Commented
 	//? for now for every pokemon we allow only the newest generation
-	// switch pokemonGeneration.Name {
+	switch pokemonGeneration.Name {
 	// case "generation-i":
 	// 	allowedMoveVersion = []string{"red-blue", "yellow", "scarlet-violet", "diamond-pearl"}
 	// case "generation-ii":
 	// 	allowedMoveVersion = []string{"crystal", "gold-silver"}
 	// case "generation-iii":
 	// 	allowedMoveVersion = []string{"emerald", "ruby-sapphire"}
-	// case "generation-iv":
-	// 	allowedMoveVersion = []string{"diamond-pearl", "platinum"}
-	// case "generation-v":
-	// 	allowedMoveVersion = []string{"black-white", "black-2-white-2"}
-	// case "generation-vi":
-	// 	allowedMoveVersion = []string{"x-y", "omega-ruby-alpha-sapphire"}
-	// case "generation-vii":
-	// 	allowedMoveVersion = []string{"sun-moon", "ultra-sun-ultra-moon"}
-	// case "generation-viii":
-	// 	allowedMoveVersion = []string{"sword-shield", "legends-arceus"}
-	// case "generation-ix":
-	// 	allowedMoveVersion = []string{"scarlet-violet", "diamond-pearl"}
-	// }
+	case "generation-iv":
+		allowedMoveVersion = []string{"scarlet-violet", "legends-arceus"}
+	case "generation-v":
+		allowedMoveVersion = []string{"scarlet-violet", "ultra-sun-ultra-moon"}
+	case "generation-vi":
+		allowedMoveVersion = []string{"scarlet-violet", "ultra-sun-ultra-moon"}
+	case "generation-vii":
+		allowedMoveVersion = []string{"ultra-sun-ultra-moon", "sword-shield"}
+	case "generation-viii":
+		allowedMoveVersion = []string{"sword-shield", "scarlet-violet"}
+	case "generation-ix":
+		allowedMoveVersion = []string{"scarlet-violet"}
+	}
 
-	allowedMoveMethod := []string{"egg", "level-up", "machine", "tutor"}
+	allowedMoveMethod := []string{"level-up", "machine", "egg", "tutor"}
 
 	pokedexNumbers := []pokemon_model.PokemonNumber{}
 	for _, number := range docSpecies.PokedexNumbers {

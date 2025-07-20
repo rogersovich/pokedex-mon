@@ -221,8 +221,8 @@ func (s *pokemonServiceImpl) GetPokemonList(ctx context.Context, limit, offset i
 
 	var listItems []model.PokemonListItem
 	for _, p := range pokemons {
-		defaultSpriteOfficial := "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/"
-		thumbnailImg := defaultSpriteOfficial + fmt.Sprintf("%d.png", p.ID)
+
+		thumbnailImg := utils.GetThumbnailPokemon(p.ID, p.Sprites.FrontDefault)
 
 		listItems = append(listItems, model.PokemonListItem{
 			ID:        p.ID,

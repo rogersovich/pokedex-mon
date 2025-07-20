@@ -146,7 +146,7 @@ func (s *evolutionServiceImpl) populateEvolutionChainDetails(ctx context.Context
 	pokemonName := chainLink.Species.Name
 	pokemonInfoResponse, _ := s.evolutionRepo.GetPokemonInfo(ctx, pokemonName)
 	pokemonID := pokemonInfoResponse.ID
-	thumbnailImg := utils.GetThumbnailPokemon(pokemonID)
+	thumbnailImg := utils.GetThumbnailPokemon(pokemonID, pokemonName)
 
 	chainLink.PokemonInfo = model.EvolutionPokemonInfoResponse{
 		ID:        pokemonID,
